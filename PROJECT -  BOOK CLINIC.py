@@ -17,6 +17,8 @@ ACCENT = "#FF0000"
 BUTTON_COLOR = "#FF8BA7"
 TEXT_COLOR = "#4A4A4A"
 
+# This is a test comment to see commit changes
+
 
 class ClinicBookingApp:
     def __init__(self, root):
