@@ -17,8 +17,6 @@ ACCENT = "#FF0000"
 BUTTON_COLOR = "#FF8BA7"
 TEXT_COLOR = "#4A4A4A"
 
-# This is a test comment to see commit changes
-
 
 class ClinicBookingApp:
     def __init__(self, root):
@@ -30,7 +28,7 @@ class ClinicBookingApp:
         self.cart = {}
         self.product_images = {}
 
-        # Fonts: try to use Poppins, fallback to Arial / system default
+        
         available = font.families()
         if "Poppins" in available:
             self.font_regular = ("Poppins", 11)
@@ -42,7 +40,7 @@ class ClinicBookingApp:
             self.font_bold = (fallback, 12, "bold")
             self.header_font = (fallback, 24, "bold")
 
-        # Shared DateEntry for the appointment date selection (default today)
+            
         self.selected_date = tk.StringVar()
 
         self.create_login_page()
@@ -50,7 +48,7 @@ class ClinicBookingApp:
     def clear_window(self):
         for widget in self.root.winfo_children():
             widget.destroy()
-
+#Test idol
     def create_login_page(self):
         self.clear_window()
         self.root.configure(bg=MAIN_BG)
