@@ -166,7 +166,8 @@ class ClinicBookingApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Clinic Booking System")
-        self.root.geometry("1200x800")
+        # Maximize window to fill screen
+        self.root.state('zoomed')
         self.root.configure(bg=MAIN_BG)
         self.current_user = None
         self.cart = {}
@@ -188,7 +189,7 @@ class ClinicBookingApp:
             
         self.selected_date = tk.StringVar()
 
-        self.create_login_page()
+        self.create_welcome_page()
 # try lang lods
     def clear_window(self):
         for widget in self.root.winfo_children():
@@ -204,9 +205,9 @@ class ClinicBookingApp:
             
             # If window dimensions are not yet set, use defaults
             if window_width <= 1:
-                window_width = 1200
+                window_width = 1600
             if window_height <= 1:
-                window_height = 800
+                window_height = 900
             
             # Resize image to fit window
             bg_img = bg_img.resize((window_width, window_height), Image.LANCZOS)
@@ -217,8 +218,78 @@ class ClinicBookingApp:
         except Exception:
             pass
 
-    def create_login_page(self):
+    def create_welcome_page(self):
+        """Display welcome/landing page with Get Started button."""
         self.clear_window()
+        self.root.configure(bg="#0B8FA3")
+        self.set_background_image("background of the GUI log in page.jpeg")
+
+        # Get window dimensions
+        window_width = self.root.winfo_width()
+        window_height = self.root.winfo_height()
+        
+        if window_width <= 1:
+            window_width = 1600
+        if window_height <= 1:
+            window_height = 900
+
+        # Welcome card container
+        welcome_card = tk.Frame(self.root, bg="white", relief="flat", bd=0)
+        welcome_card.place(relx=0.5, rely=0.5, anchor="center", width=int(window_width * 0.4), height=int(window_height * 0.7))
+
+        # Welcome content
+        content_frame = tk.Frame(welcome_card, bg="white")
+        content_frame.pack(fill="both", expand=True, padx=30, pady=40)
+
+        # Clinic title
+        tk.Label(content_frame, text="🏥 OUR CLINIC", font=("Arial", 24, "bold"), 
+                bg="white", fg="#0B8FA3").pack(pady=(0, 10))
+        
+        # Main heading
+        tk.Label(content_frame, text="TREATS ALL", font=("Arial", 32, "bold"), 
+                bg="white", fg="#0B8FA3").pack(pady=(0, 20))
+
+        # Description
+        tk.Label(content_frame, text="Your Health, One Click Away", font=("Arial", 14), 
+                bg="white", fg="#666").pack(pady=(0, 30))
+
+        # Features list
+        features = ["✓ Easy Appointment Booking", "✓ Multiple Services", "✓ Secure & Reliable", "✓ 24/7 Support"]
+        for feature in features:
+            tk.Label(content_frame, text=feature, font=("Arial", 11), 
+                    bg="white", fg="#333").pack(anchor="w", pady=5)
+
+        # Spacer
+        tk.Label(content_frame, text="", bg="white").pack(pady=20)
+
+        # Get Started button
+        get_started_btn = tk.Button(content_frame, text="Get Started", command=self.create_login_page,
+                                   bg="#0B8FA3", fg="white", font=("Arial", 14, "bold"),
+                                   border=0, relief="flat", cursor="hand2", padx=40, pady=15)
+        get_started_btn.pack(fill="x")
+        
+        # Hover effect
+        def on_enter(e):
+            get_started_btn.config(bg="#087A8F")
+        def on_leave(e):
+            get_started_btn.config(bg="#0B8FA3")
+        get_started_btn.bind("<Enter>", on_enter)
+        get_started_btn.bind("<Leave>", on_leave)
+
+        # Footer
+        footer_frame = tk.Frame(self.root, bg="#0B8FA3", height=40)
+        footer_frame.pack(side="bottom", fill="x")
+        
+        footer_content = tk.Frame(footer_frame, bg="#0B8FA3")
+        footer_content.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        tk.Label(footer_content, text="© 2025 Clinic Booking System. All rights reserved.", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="left")
+        tk.Label(footer_content, text="Developed by: Yul, Dwayne, James, Zaiver", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="right")
+
+    def create_login_page(self):
+        self.clear_window() 
         self.root.configure(bg="#E8E8E8")
 
         # Get window dimensions for responsive sizing
@@ -227,13 +298,13 @@ class ClinicBookingApp:
         
         # If window dimensions not yet set, use defaults
         if window_width <= 1:
-            window_width = 1200
+            window_width = 1600
         if window_height <= 1:
-            window_height = 800
+            window_height = 900
         
-        # Calculate container size (90% of window)
-        container_width = int(window_width * 0.9)
-        container_height = int(window_height * 0.85)
+        # Calculate container size (95% of window for full screen effect)
+        container_width = int(window_width * 0.95)
+        container_height = int(window_height * 0.95)
 
         # Main container frame
         container = tk.Frame(self.root, bg="white", relief="flat", bd=0)
@@ -253,13 +324,13 @@ class ClinicBookingApp:
         tk.Label(left_panel, text="Clinic Booking System", font=("Arial", 11), 
                 bg="white", fg="#999").pack(pady=(0, 25))
 
-        # Mobile Number field
-        tk.Label(left_panel, text="Mobile Number", bg="white", font=("Arial", 11), 
+        # Username field
+        tk.Label(left_panel, text="Username", bg="white", font=("Arial", 11), 
                 fg="#333").pack(anchor="w", padx=40, pady=(10, 3))
-        mobile_frame = tk.Frame(left_panel, bg="white", highlightbackground="#E0E0E0", 
+        username_frame = tk.Frame(left_panel, bg="white", highlightbackground="#E0E0E0", 
                                highlightthickness=1, relief="flat")
-        mobile_frame.pack(padx=40, pady=(0, 15), fill="x")
-        self.login_username = tk.Entry(mobile_frame, width=35, font=("Arial", 12), 
+        username_frame.pack(padx=40, pady=(0, 15), fill="x")
+        self.login_username = tk.Entry(username_frame, width=35, font=("Arial", 12), 
                                        border=0, bg="white")
         self.login_username.pack(padx=12, pady=10)
 
@@ -322,6 +393,18 @@ class ClinicBookingApp:
         except Exception:
             tk.Label(right_panel, text="🏥\nAnime Doctor\nImage", font=("Arial", 16, "bold"), 
                     bg="#B8E6F0", fg="#0B8FA3", justify="center").pack(expand=True)
+
+        # Footer
+        footer_frame = tk.Frame(self.root, bg="#0B8FA3", height=40)
+        footer_frame.pack(side="bottom", fill="x")
+        
+        footer_content = tk.Frame(footer_frame, bg="#0B8FA3")
+        footer_content.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        tk.Label(footer_content, text="© 2025 Clinic Booking System. All rights reserved.", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="left")
+        tk.Label(footer_content, text="Developed by: Yul, Dwayne, James, Zaiver", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="right")
 
     def create_register_page(self):
         self.clear_window()
