@@ -99,7 +99,6 @@ class ClinicBookingApp:
         self.cart = {}
         self.product_images = {}
 
-        # Load existing users from file
         load_users()
         
         available = font.families()
