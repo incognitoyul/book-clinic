@@ -121,10 +121,10 @@ class ClinicBookingApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-    def set_background_image(self):
-        """Set dental.jpeg as background for the entire page."""
+    def set_background_image(self, image_file="dental.jpeg"):
+        """Set background image for the page."""
         try:
-            bg_img = Image.open("dental.jpeg")
+            bg_img = Image.open(image_file)
             # Get current window dimensions
             window_width = self.root.winfo_width()
             window_height = self.root.winfo_height()
@@ -147,10 +147,10 @@ class ClinicBookingApp:
     def create_login_page(self):
         self.clear_window()
         self.root.configure(bg=MAIN_BG)
-        self.set_background_image()
+        self.set_background_image("background of the GUI log in page.jpeg")
 
         login_frame = tk.Frame(self.root, width=700, height=400, bg="white", bd=2, relief="ridge")
-        login_frame.place(relx=0.5, rely=0.5, anchor="center")
+        login_frame.place(relx=0.75, rely=0.5, anchor="center")
 
         left_panel = tk.Frame(login_frame, bg=ACCENT, width=350, height=400)
         left_panel.pack(side="left", fill="both")
