@@ -48,7 +48,7 @@ class ClinicBookingApp:
     def clear_window(self):
         for widget in self.root.winfo_children():
             widget.destroy()
-#Test idol
+
     def create_login_page(self):
         self.clear_window()
         self.root.configure(bg=MAIN_BG)
