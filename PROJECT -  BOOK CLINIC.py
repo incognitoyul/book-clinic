@@ -166,7 +166,7 @@ class ClinicBookingApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Clinic Booking System")
-        # Maximize window to fill screen
+        
         self.root.state('zoomed')
         self.root.configure(bg=MAIN_BG)
         self.current_user = None
@@ -199,21 +199,21 @@ class ClinicBookingApp:
         """Set background image for the page."""
         try:
             bg_img = Image.open(image_file)
-            # Get current window dimensions
+            
             window_width = self.root.winfo_width()
             window_height = self.root.winfo_height()
             
-            # If window dimensions are not yet set, use defaults
+            
             if window_width <= 1:
                 window_width = 1600
             if window_height <= 1:
                 window_height = 900
             
-            # Resize image to fit window
+          
             bg_img = bg_img.resize((window_width, window_height), Image.LANCZOS)
             self.bg_photo = ImageTk.PhotoImage(bg_img)
             bg_label = tk.Label(self.root, image=self.bg_photo)
-            bg_label.image = self.bg_photo  # Keep a reference
+            bg_label.image = self.bg_photo  
             bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         except Exception:
             pass
@@ -224,7 +224,7 @@ class ClinicBookingApp:
         self.root.configure(bg="#0B8FA3")
         self.set_background_image("background of the GUI log in page.jpeg")
 
-        # Get window dimensions
+        
         window_width = self.root.winfo_width()
         window_height = self.root.winfo_height()
         
@@ -233,42 +233,46 @@ class ClinicBookingApp:
         if window_height <= 1:
             window_height = 900
 
-        # Welcome card container
-        welcome_card = tk.Frame(self.root, bg="white", relief="flat", bd=0)
-        welcome_card.place(relx=0.5, rely=0.5, anchor="center", width=int(window_width * 0.4), height=int(window_height * 0.7))
+        
+        main_container = tk.Frame(self.root, bg="white", relief="flat", bd=0, highlightbackground="#0B8FA3", highlightthickness=2)
+        main_container.place(relx=0.5, rely=0.5, anchor="center", width=int(window_width * 0.8), height=int(window_height * 0.7))
 
-        # Welcome content
-        content_frame = tk.Frame(welcome_card, bg="white")
-        content_frame.pack(fill="both", expand=True, padx=30, pady=40)
+        
+        left_panel = tk.Frame(main_container, bg="white")
+        left_panel.pack(side="left", fill="both", expand=True, padx=30, pady=40)
 
-        # Clinic title
+        
+        content_frame = left_panel
+
+        
         tk.Label(content_frame, text="🏥 OUR CLINIC", font=("Arial", 24, "bold"), 
                 bg="white", fg="#0B8FA3").pack(pady=(0, 10))
         
-        # Main heading
+        
         tk.Label(content_frame, text="TREATS ALL", font=("Arial", 32, "bold"), 
                 bg="white", fg="#0B8FA3").pack(pady=(0, 20))
 
-        # Description
+        
         tk.Label(content_frame, text="Your Health, One Click Away", font=("Arial", 14), 
-                bg="white", fg="#666").pack(pady=(0, 30))
+                bg="white", fg="#666").pack(pad y=(0, 30))
 
-        # Features list
+        
         features = ["✓ Easy Appointment Booking", "✓ Multiple Services", "✓ Secure & Reliable", "✓ 24/7 Support"]
         for feature in features:
             tk.Label(content_frame, text=feature, font=("Arial", 11), 
                     bg="white", fg="#333").pack(anchor="w", pady=5)
 
-        # Spacer
+        
         tk.Label(content_frame, text="", bg="white").pack(pady=20)
 
-        # Get Started button
+        
         get_started_btn = tk.Button(content_frame, text="Get Started", command=self.create_login_page,
                                    bg="#0B8FA3", fg="white", font=("Arial", 14, "bold"),
-                                   border=0, relief="flat", cursor="hand2", padx=40, pady=15)
-        get_started_btn.pack(fill="x")
+                                   border=0, relief="flat", cursor="hand2", padx=40, pady=15,
+                                   activebackground="#087A8F", activeforeground="white")
+        get_started_btn.pack(fill="x", ipady=5)
         
-        # Hover effect
+        
         def on_enter(e):
             get_started_btn.config(bg="#087A8F")
         def on_leave(e):
@@ -276,7 +280,37 @@ class ClinicBookingApp:
         get_started_btn.bind("<Enter>", on_enter)
         get_started_btn.bind("<Leave>", on_leave)
 
-        # Footer
+        
+        right_panel = tk.Frame(main_container, bg="white")
+        right_panel.pack(side="right", fill="both", expand=False, padx=20, pady=20)
+
+        
+        images_container = tk.Frame(right_panel, bg="white")
+        images_container.pack()
+
+        
+        try:
+            doctor_img = Image.open("MAIN DOCTOR.png")
+            
+            self.doctor_photo = ImageTk.PhotoImage(doctor_img)
+            doctor_label = tk.Label(images_container, image=self.doctor_photo, bg="white")
+            doctor_label.pack(side="left", padx=10, pady=10)
+        except Exception:
+            tk.Label(images_container, text="👨‍⚕️\nMAIN DOCTOR", font=("Arial", 16, "bold"), 
+                    bg="white", fg="#0B8FA3", justify="center").pack(side="left", padx=10, pady=10)
+
+        
+        try:
+            book_img = Image.open("booking book.jpg")
+            
+            self.book_photo = ImageTk.PhotoImage(book_img)
+            book_label = tk.Label(images_container, image=self.book_photo, bg="white")
+            book_label.pack(side="left", padx=10, pady=10)
+        except Exception:
+            tk.Label(images_container, text="📖\nBOOKING BOOK", font=("Arial", 16, "bold"), 
+                    bg="white", fg="#0B8FA3", justify="center").pack(side="left", padx=10, pady=10)
+
+        
         footer_frame = tk.Frame(self.root, bg="#0B8FA3", height=40)
         footer_frame.pack(side="bottom", fill="x")
         
@@ -292,39 +326,39 @@ class ClinicBookingApp:
         self.clear_window() 
         self.root.configure(bg="#E8E8E8")
 
-        # Get window dimensions for responsive sizing
+        
         window_width = self.root.winfo_width()
         window_height = self.root.winfo_height()
         
-        # If window dimensions not yet set, use defaults
+        
         if window_width <= 1:
             window_width = 1600
         if window_height <= 1:
             window_height = 900
         
-        # Calculate container size (95% of window for full screen effect)
+        
         container_width = int(window_width * 0.95)
         container_height = int(window_height * 0.95)
 
-        # Main container frame
+        
         container = tk.Frame(self.root, bg="white", relief="flat", bd=0)
         container.place(relx=0.5, rely=0.5, anchor="center", width=container_width, height=container_height)
 
-        # Left panel with teal header and login form
+        
         left_panel = tk.Frame(container, bg="white")
         left_panel.pack(side="left", fill="both", expand=True)
 
-        # Teal header bar
+        
         header_bar = tk.Frame(left_panel, bg="#0B8FA3", height=50)
         header_bar.pack(fill="x")
 
-        # Hospital title
+        
         tk.Label(left_panel, text="Your Health, One Click Away", font=("Arial", 20, "bold"), 
                 bg="white", fg="#0B8FA3").pack(pady=(25, 5))
         tk.Label(left_panel, text="Clinic Booking System", font=("Arial", 11), 
                 bg="white", fg="#999").pack(pady=(0, 25))
 
-        # Username field
+        
         tk.Label(left_panel, text="Username", bg="white", font=("Arial", 11), 
                 fg="#333").pack(anchor="w", padx=40, pady=(10, 3))
         username_frame = tk.Frame(left_panel, bg="white", highlightbackground="#E0E0E0", 
@@ -334,7 +368,7 @@ class ClinicBookingApp:
                                        border=0, bg="white")
         self.login_username.pack(padx=12, pady=10)
 
-        # Password field
+        
         tk.Label(left_panel, text="Password", bg="white", font=("Arial", 11), 
                 fg="#333").pack(anchor="w", padx=40, pady=(10, 3))
         password_frame = tk.Frame(left_panel, bg="white", highlightbackground="#E0E0E0", 
@@ -344,7 +378,7 @@ class ClinicBookingApp:
                                        border=0, bg="white")
         self.login_password.pack(padx=12, pady=10)
 
-        # Remember me and Forgot password
+        
         options_frame = tk.Frame(left_panel, bg="white")
         options_frame.pack(padx=40, pady=(0, 20), fill="x")
         tk.Label(options_frame, text="Remember me", bg="white", font=("Arial", 10), 
@@ -354,13 +388,13 @@ class ClinicBookingApp:
         forgot_link.pack(side="right")
         forgot_link.bind("<Button-1>", lambda e: self.forgot_password())
 
-        # Login button
+        
         login_btn = tk.Button(left_panel, text="Login", command=self.login, 
                              bg="#0B8FA3", fg="white", font=("Arial", 13, "bold"), 
                              border=0, relief="flat", cursor="hand2", padx=20, pady=12)
         login_btn.pack(pady=15, padx=40, fill="x")
         
-        # Add hover effect to button
+        
         def on_enter(e):
             login_btn.config(bg="#087A8F")
         def on_leave(e):
@@ -368,24 +402,24 @@ class ClinicBookingApp:
         login_btn.bind("<Enter>", on_enter)
         login_btn.bind("<Leave>", on_leave)
 
-        # Create Account link
+        
         create_link = tk.Label(left_panel, text="Create Account", bg="white", font=("Arial", 11), 
                               fg="#333", cursor="hand2")
         create_link.pack(pady=20)
         create_link.bind("<Button-1>", lambda e: self.create_register_page())
 
-        # Vertical divider
+        
         divider = tk.Frame(container, bg="#E0E0E0", width=2)
         divider.pack(side="left", fill="y")
 
-        # Right panel with light teal background and anime doctor image
+        
         right_panel = tk.Frame(container, bg="#B8E6F0")
         right_panel.pack(side="right", fill="both", expand=True)
 
-        # Try to load and display anime doctor image
+        
         try:
             anime_img = Image.open("log in anime doctor.png")
-            # Scale image to fit right panel
+            
             anime_img = anime_img.resize((int(container_width * 0.4), int(container_height * 0.8)), Image.LANCZOS)
             self.anime_photo = ImageTk.PhotoImage(anime_img)
             anime_label = tk.Label(right_panel, image=self.anime_photo, bg="#B8E6F0")
@@ -394,7 +428,7 @@ class ClinicBookingApp:
             tk.Label(right_panel, text="🏥\nAnime Doctor\nImage", font=("Arial", 16, "bold"), 
                     bg="#B8E6F0", fg="#0B8FA3", justify="center").pack(expand=True)
 
-        # Footer
+        
         footer_frame = tk.Frame(self.root, bg="#0B8FA3", height=40)
         footer_frame.pack(side="bottom", fill="x")
         
@@ -446,26 +480,26 @@ class ClinicBookingApp:
         forgot_window.configure(bg="white")
         forgot_window.resizable(False, False)
 
-        # Header
+        
         header_frame = tk.Frame(forgot_window, bg="#0B8FA3", height=50)
         header_frame.pack(fill="x")
         tk.Label(header_frame, text="Reset Password", font=("Arial", 16, "bold"), 
                 bg="#0B8FA3", fg="white").pack(pady=12)
 
-        # Content frame
+        
         content_frame = tk.Frame(forgot_window, bg="white")
         content_frame.pack(fill="both", expand=True, padx=30, pady=30)
 
-        # Instructions
+        
         tk.Label(content_frame, text="Enter your username to reset your password", 
                 font=("Arial", 10), bg="white", fg="#666").pack(pady=(0, 20))
 
-        # Username field
+        
         tk.Label(content_frame, text="Username", font=("Arial", 10), bg="white", fg="#333").pack(anchor="w", pady=(5, 2))
         username_entry = tk.Entry(content_frame, font=("Arial", 11), width=30, border=1, relief="solid")
         username_entry.pack(pady=(0, 20), fill="x")
 
-        # Buttons frame
+        
         button_frame = tk.Frame(content_frame, bg="white")
         button_frame.pack(fill="x", pady=10)
 
@@ -479,7 +513,7 @@ class ClinicBookingApp:
                 messagebox.showerror("Error", "Username not found")
                 return
             
-            # Show new password dialog
+            
             new_pass_window = tk.Toplevel(forgot_window)
             new_pass_window.title("Set New Password")
             new_pass_window.geometry("400x200")
@@ -499,12 +533,12 @@ class ClinicBookingApp:
                     messagebox.showerror("Error", "Please enter a new password")
                     return
                 
-                # Update password in memory and file
+                
                 users[username] = new_password
                 
-                # Update in file
+                
                 try:
-                    # Read all users
+                    
                     all_users = []
                     if os.path.exists(USERS_FILE):
                         with open(USERS_FILE, 'r') as f:
@@ -516,12 +550,12 @@ class ClinicBookingApp:
                                         user_data['password'] = new_password
                                     all_users.append(user_data)
                     
-                    # Write back
+                    
                     with open(USERS_FILE, 'w') as f:
                         for user in all_users:
                             f.write(json.dumps(user) + '\n')
                     
-                    # Save forgot password record
+                    
                     save_forgot_password_record(username, new_password)
                     
                     messagebox.showinfo("Success", "Password reset successfully! Please login with your new password.")
@@ -761,13 +795,13 @@ class ClinicBookingApp:
         bookings_window.geometry("700x600")
         bookings_window.configure(bg="white")
 
-        # Header
+        
         header_frame = tk.Frame(bookings_window, bg=ACCENT, height=60)
         header_frame.pack(fill="x")
         tk.Label(header_frame, text="📋 My Bookings", font=("Arial", 16, "bold"), 
                  bg=ACCENT, fg="white").pack(pady=15)
 
-        # Main content frame with scrollbar
+        
         content_frame = tk.Frame(bookings_window, bg="white")
         content_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -775,7 +809,7 @@ class ClinicBookingApp:
             tk.Label(content_frame, text="No bookings found.", font=("Arial", 12), 
                      bg="white", fg="#999").pack(pady=50)
         else:
-            # Create a canvas with scrollbar for multiple bookings
+            
             canvas = tk.Canvas(content_frame, bg="white", highlightthickness=0)
             scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=canvas.yview)
             scrollable_frame = tk.Frame(canvas, bg="white")
@@ -788,12 +822,12 @@ class ClinicBookingApp:
             canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
             canvas.configure(yscrollcommand=scrollbar.set)
 
-            # Display each booking
+            
             for booking in bookings:
                 booking_card = tk.Frame(scrollable_frame, bg=CARD_BG, bd=1, relief="solid", padx=15, pady=15)
                 booking_card.pack(fill="x", pady=10)
 
-                # Booking ID and Status
+                
                 header_row = tk.Frame(booking_card, bg=CARD_BG)
                 header_row.pack(fill="x", pady=(0, 10))
                 tk.Label(header_row, text=f"Booking ID: {booking['booking_id']}", font=("Arial", 10, "bold"), 
@@ -801,11 +835,11 @@ class ClinicBookingApp:
                 tk.Label(header_row, text=f"Status: {booking['status'].upper()}", font=("Arial", 9, "bold"), 
                          bg=CARD_BG, fg="#4CAF50").pack(side="right")
 
-                # Appointment Date
+                
                 tk.Label(booking_card, text=f"Appointment Date: {booking['appointment_date']}", 
                          font=("Arial", 10), bg=CARD_BG, fg=TEXT_COLOR).pack(anchor="w", pady=3)
 
-                # Services
+                
                 tk.Label(booking_card, text="Services:", font=("Arial", 9, "bold"), 
                          bg=CARD_BG, fg=TEXT_COLOR).pack(anchor="w", pady=(5, 3))
                 
@@ -814,7 +848,7 @@ class ClinicBookingApp:
                     tk.Label(booking_card, text=f"  • {service_name} x{qty} = ₱{price}", 
                              font=("Arial", 9), bg=CARD_BG, fg=TEXT_COLOR).pack(anchor="w")
 
-                # Total and Created Date
+                
                 total_frame = tk.Frame(booking_card, bg=CARD_BG)
                 total_frame.pack(fill="x", pady=(10, 0))
                 tk.Label(total_frame, text=f"Total: ₱{booking['total_amount']}", font=("Arial", 10, "bold"), 
@@ -822,7 +856,7 @@ class ClinicBookingApp:
                 tk.Label(total_frame, text=f"Booked on: {booking['created_at']}", font=("Arial", 8), 
                          bg=CARD_BG, fg="#999").pack(side="right")
 
-                # Cancel button
+                
                 def cancel_booking(booking_data=booking):
                     def confirm_cancel():
                         reason = reason_entry.get().strip()
@@ -870,7 +904,7 @@ class ClinicBookingApp:
             canvas.pack(side="left", fill="both", expand=True)
             scrollbar.pack(side="right", fill="y")
 
-        # Close button
+        
         button_frame = tk.Frame(bookings_window, bg="white")
         button_frame.pack(fill="x", padx=20, pady=15)
         ttk.Button(button_frame, text="Close", command=bookings_window.destroy).pack()
