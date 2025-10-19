@@ -146,47 +146,109 @@ class ClinicBookingApp:
 
     def create_login_page(self):
         self.clear_window()
-        self.root.configure(bg=MAIN_BG)
-        self.set_background_image("background of the GUI log in page.jpeg")
+        self.root.configure(bg="#E8E8E8")
 
-        login_frame = tk.Frame(self.root, width=700, height=400, bg="white", bd=2, relief="ridge")
-        login_frame.place(relx=0.75, rely=0.5, anchor="center")
+        # Get window dimensions for responsive sizing
+        window_width = self.root.winfo_width()
+        window_height = self.root.winfo_height()
+        
+        # If window dimensions not yet set, use defaults
+        if window_width <= 1:
+            window_width = 1200
+        if window_height <= 1:
+            window_height = 800
+        
+        # Calculate container size (90% of window)
+        container_width = int(window_width * 0.9)
+        container_height = int(window_height * 0.85)
 
-        left_panel = tk.Frame(login_frame, bg=ACCENT, width=350, height=400)
-        left_panel.pack(side="left", fill="both")
+        # Main container frame
+        container = tk.Frame(self.root, bg="white", relief="flat", bd=0)
+        container.place(relx=0.5, rely=0.5, anchor="center", width=container_width, height=container_height)
 
-        tk.Label(left_panel, text="🏥 Welcome Back", font=self.header_font, bg=ACCENT, fg="white").place(
-            relx=0.5, rely=0.35, anchor="center"
-        )
-        tk.Label(left_panel, text="Login to your Clinic Account", font=self.font_regular, bg=ACCENT, fg="white").place(
-            relx=0.5, rely=0.5, anchor="center"
-        )
+        # Left panel with teal header and login form
+        left_panel = tk.Frame(container, bg="white")
+        left_panel.pack(side="left", fill="both", expand=True)
 
-        right_panel = tk.Frame(login_frame, bg="white", width=350, height=400)
-        right_panel.pack(side="right", fill="both")
+        # Teal header bar
+        header_bar = tk.Frame(left_panel, bg="#0B8FA3", height=50)
+        header_bar.pack(fill="x")
 
-        tk.Label(right_panel, text="Login", font=self.header_font, bg="white").place(x=120, y=30) 
-        tk.Label(right_panel, text="Email / Username", bg="white", font=self.font_regular).place(x=50, y=100)
-        self.login_username = ttk.Entry(right_panel, width=30)
-        self.login_username.place(x=50, y=125)
+        # Hospital title
+        tk.Label(left_panel, text="Your Health, One Click Away", font=("Arial", 20, "bold"), 
+                bg="white", fg="#0B8FA3").pack(pady=(25, 5))
+        tk.Label(left_panel, text="Clinic Booking System", font=("Arial", 11), 
+                bg="white", fg="#999").pack(pady=(0, 25))
 
-        tk.Label(right_panel, text="Password", bg="white", font=self.font_regular).place(x=50, y=165)
-        self.login_password = ttk.Entry(right_panel, show="*", width=30)
-        self.login_password.place(x=50, y=190)
+        # Mobile Number field
+        tk.Label(left_panel, text="Mobile Number", bg="white", font=("Arial", 11), 
+                fg="#333").pack(anchor="w", padx=40, pady=(10, 3))
+        mobile_frame = tk.Frame(left_panel, bg="white", highlightbackground="#E0E0E0", 
+                               highlightthickness=1, relief="flat")
+        mobile_frame.pack(padx=40, pady=(0, 15), fill="x")
+        self.login_username = tk.Entry(mobile_frame, width=35, font=("Arial", 12), 
+                                       border=0, bg="white")
+        self.login_username.pack(padx=12, pady=10)
 
-        ttk.Button(right_panel, text="Submit", command=self.login).place(x=135, y=240)
+        # Password field
+        tk.Label(left_panel, text="Password", bg="white", font=("Arial", 11), 
+                fg="#333").pack(anchor="w", padx=40, pady=(10, 3))
+        password_frame = tk.Frame(left_panel, bg="white", highlightbackground="#E0E0E0", 
+                                 highlightthickness=1, relief="flat")
+        password_frame.pack(padx=40, pady=(0, 15), fill="x")
+        self.login_password = tk.Entry(password_frame, show="•", width=35, font=("Arial", 12), 
+                                       border=0, bg="white")
+        self.login_password.pack(padx=12, pady=10)
 
-        tk.Label(right_panel, text="Don't have an account?", bg="white", font=self.font_regular).place(x=60, y=290)
-        register_link = tk.Label(
-            right_panel,
-            text="Register",
-            fg="blue",
-            cursor="hand2",
-            bg="white",
-            font=(self.font_regular[0], 10, "underline"),
-        )
-        register_link.place(x=210, y=290)
-        register_link.bind("<Button-1>", lambda e: self.create_register_page())
+        # Remember me and Forgot password
+        options_frame = tk.Frame(left_panel, bg="white")
+        options_frame.pack(padx=40, pady=(0, 20), fill="x")
+        tk.Label(options_frame, text="Remember me", bg="white", font=("Arial", 10), 
+                fg="#333").pack(side="left")
+        forgot_link = tk.Label(options_frame, text="Forgot Password?", bg="white", font=("Arial", 10), 
+                fg="#0099CC", cursor="hand2")
+        forgot_link.pack(side="right")
+        forgot_link.bind("<Button-1>", lambda e: self.forgot_password())
+
+        # Login button
+        login_btn = tk.Button(left_panel, text="Login", command=self.login, 
+                             bg="#0B8FA3", fg="white", font=("Arial", 13, "bold"), 
+                             border=0, relief="flat", cursor="hand2", padx=20, pady=12)
+        login_btn.pack(pady=15, padx=40, fill="x")
+        
+        # Add hover effect to button
+        def on_enter(e):
+            login_btn.config(bg="#087A8F")
+        def on_leave(e):
+            login_btn.config(bg="#0B8FA3")
+        login_btn.bind("<Enter>", on_enter)
+        login_btn.bind("<Leave>", on_leave)
+
+        # Create Account link
+        create_link = tk.Label(left_panel, text="Create Account", bg="white", font=("Arial", 11), 
+                              fg="#333", cursor="hand2")
+        create_link.pack(pady=20)
+        create_link.bind("<Button-1>", lambda e: self.create_register_page())
+
+        # Vertical divider
+        divider = tk.Frame(container, bg="#E0E0E0", width=2)
+        divider.pack(side="left", fill="y")
+
+        # Right panel with light teal background and anime doctor image
+        right_panel = tk.Frame(container, bg="#B8E6F0")
+        right_panel.pack(side="right", fill="both", expand=True)
+
+        # Try to load and display anime doctor image
+        try:
+            anime_img = Image.open("log in anime doctor.png")
+            # Scale image to fit right panel
+            anime_img = anime_img.resize((int(container_width * 0.4), int(container_height * 0.8)), Image.LANCZOS)
+            self.anime_photo = ImageTk.PhotoImage(anime_img)
+            anime_label = tk.Label(right_panel, image=self.anime_photo, bg="#B8E6F0")
+            anime_label.pack(expand=True, padx=20, pady=20)
+        except Exception:
+            tk.Label(right_panel, text="🏥\nAnime Doctor\nImage", font=("Arial", 16, "bold"), 
+                    bg="#B8E6F0", fg="#0B8FA3", justify="center").pack(expand=True)
 
     def create_register_page(self):
         self.clear_window()
@@ -219,6 +281,106 @@ class ClinicBookingApp:
             self.create_main_interface()
         else:
             messagebox.showerror("Error", "Invalid username or password")
+
+    def forgot_password(self):
+        """Handle forgot password functionality."""
+        forgot_window = tk.Toplevel(self.root)
+        forgot_window.title("Forgot Password")
+        forgot_window.geometry("400x250")
+        forgot_window.configure(bg="white")
+        forgot_window.resizable(False, False)
+
+        # Header
+        header_frame = tk.Frame(forgot_window, bg="#0B8FA3", height=50)
+        header_frame.pack(fill="x")
+        tk.Label(header_frame, text="Reset Password", font=("Arial", 16, "bold"), 
+                bg="#0B8FA3", fg="white").pack(pady=12)
+
+        # Content frame
+        content_frame = tk.Frame(forgot_window, bg="white")
+        content_frame.pack(fill="both", expand=True, padx=30, pady=30)
+
+        # Instructions
+        tk.Label(content_frame, text="Enter your username to reset your password", 
+                font=("Arial", 10), bg="white", fg="#666").pack(pady=(0, 20))
+
+        # Username field
+        tk.Label(content_frame, text="Username", font=("Arial", 10), bg="white", fg="#333").pack(anchor="w", pady=(5, 2))
+        username_entry = tk.Entry(content_frame, font=("Arial", 11), width=30, border=1, relief="solid")
+        username_entry.pack(pady=(0, 20), fill="x")
+
+        # Buttons frame
+        button_frame = tk.Frame(content_frame, bg="white")
+        button_frame.pack(fill="x", pady=10)
+
+        def reset_password():
+            username = username_entry.get().strip()
+            if not username:
+                messagebox.showerror("Error", "Please enter your username")
+                return
+            
+            if username not in users:
+                messagebox.showerror("Error", "Username not found")
+                return
+            
+            # Show new password dialog
+            new_pass_window = tk.Toplevel(forgot_window)
+            new_pass_window.title("Set New Password")
+            new_pass_window.geometry("400x200")
+            new_pass_window.configure(bg="white")
+            new_pass_window.resizable(False, False)
+
+            tk.Label(new_pass_window, text="Enter New Password", font=("Arial", 12, "bold"), 
+                    bg="white", fg="#0B8FA3").pack(pady=15)
+
+            tk.Label(new_pass_window, text="New Password:", font=("Arial", 10), bg="white").pack(anchor="w", padx=30, pady=(5, 2))
+            new_pass_entry = tk.Entry(new_pass_window, show="•", font=("Arial", 11), width=30, border=1, relief="solid")
+            new_pass_entry.pack(padx=30, pady=(0, 15), fill="x")
+
+            def confirm_reset():
+                new_password = new_pass_entry.get().strip()
+                if not new_password:
+                    messagebox.showerror("Error", "Please enter a new password")
+                    return
+                
+                # Update password in memory and file
+                users[username] = new_password
+                
+                # Update in file
+                try:
+                    # Read all users
+                    all_users = []
+                    if os.path.exists(USERS_FILE):
+                        with open(USERS_FILE, 'r') as f:
+                            for line in f:
+                                line = line.strip()
+                                if line:
+                                    user_data = json.loads(line)
+                                    if user_data['username'] == username:
+                                        user_data['password'] = new_password
+                                    all_users.append(user_data)
+                    
+                    # Write back
+                    with open(USERS_FILE, 'w') as f:
+                        for user in all_users:
+                            f.write(json.dumps(user) + '\n')
+                    
+                    messagebox.showinfo("Success", "Password reset successfully! Please login with your new password.")
+                    new_pass_window.destroy()
+                    forgot_window.destroy()
+                except Exception as e:
+                    messagebox.showerror("Error", f"Failed to reset password: {str(e)}")
+
+            tk.Button(new_pass_window, text="Confirm", command=confirm_reset, 
+                     bg="#0B8FA3", fg="white", font=("Arial", 11, "bold"), 
+                     border=0, relief="flat", cursor="hand2", padx=20, pady=8).pack(pady=10)
+
+        tk.Button(button_frame, text="Reset Password", command=reset_password, 
+                 bg="#0B8FA3", fg="white", font=("Arial", 11, "bold"), 
+                 border=0, relief="flat", cursor="hand2", padx=20, pady=8).pack(side="left", padx=5)
+        tk.Button(button_frame, text="Cancel", command=forgot_window.destroy, 
+                 bg="#999", fg="white", font=("Arial", 11, "bold"), 
+                 border=0, relief="flat", cursor="hand2", padx=20, pady=8).pack(side="left", padx=5)
 
     def register(self):
         username = self.reg_username.get().strip()
