@@ -9,6 +9,8 @@ from datetime import datetime
 users = {}
 USERS_FILE = "booking_data/users.txt"
 BOOKINGS_FILE = "booking_data/bookings.txt"
+FORGOT_PASSWORD_FILE = "booking_data/forgot_password.txt"
+CANCELLATIONS_FILE = "booking_data/cancellations.txt"
 
 services = {    
     "Dental Cleaning": 1000,
@@ -87,6 +89,77 @@ def load_bookings_for_user(username):
         except Exception as e:
             print(f"Error loading bookings: {e}")
     return bookings
+
+
+def save_forgot_password_record(username, new_password):
+    """Save forgot password reset record to forgot_password.txt file."""
+    os.makedirs("booking_data", exist_ok=True)
+    try:
+        reset_record = {
+            "reset_id": f"RST-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "username": username,
+            "reset_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "completed"
+        }
+        with open(FORGOT_PASSWORD_FILE, 'a') as f:
+            f.write(json.dumps(reset_record) + '\n')
+    except Exception as e:
+        print(f"Error saving forgot password record: {e}")
+
+
+def load_forgot_password_history(username):
+    """Load password reset history for a specific user."""
+    history = []
+    if os.path.exists(FORGOT_PASSWORD_FILE):
+        try:
+            with open(FORGOT_PASSWORD_FILE, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        record = json.loads(line)
+                        if record['username'] == username:
+                            history.append(record)
+        except Exception as e:
+            print(f"Error loading forgot password history: {e}")
+    return history
+
+
+def save_cancellation_record(patient_name, booking_id, appointment_date, services_list, total_amount, reason=""):
+    """Save booking cancellation record to cancellations.txt file."""
+    os.makedirs("booking_data", exist_ok=True)
+    try:
+        cancellation_data = {
+            "cancellation_id": f"CAN-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "booking_id": booking_id,
+            "patient_name": patient_name,
+            "appointment_date": appointment_date,
+            "services": services_list,
+            "total_amount": total_amount,
+            "cancellation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "reason": reason,
+            "status": "cancelled"
+        }
+        with open(CANCELLATIONS_FILE, 'a') as f:
+            f.write(json.dumps(cancellation_data) + '\n')
+    except Exception as e:
+        print(f"Error saving cancellation record: {e}")
+
+
+def load_cancellations_for_user(username):
+    """Load all cancellation records for a specific user."""
+    cancellations = []
+    if os.path.exists(CANCELLATIONS_FILE):
+        try:
+            with open(CANCELLATIONS_FILE, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        cancellation = json.loads(line)
+                        if cancellation['patient_name'] == username:
+                            cancellations.append(cancellation)
+        except Exception as e:
+            print(f"Error loading cancellations: {e}")
+    return cancellations
 
 
 class ClinicBookingApp:
@@ -364,6 +437,9 @@ class ClinicBookingApp:
                     with open(USERS_FILE, 'w') as f:
                         for user in all_users:
                             f.write(json.dumps(user) + '\n')
+                    
+                    # Save forgot password record
+                    save_forgot_password_record(username, new_password)
                     
                     messagebox.showinfo("Success", "Password reset successfully! Please login with your new password.")
                     new_pass_window.destroy()
@@ -662,6 +738,51 @@ class ClinicBookingApp:
                          bg=CARD_BG, fg=ACCENT).pack(side="left")
                 tk.Label(total_frame, text=f"Booked on: {booking['created_at']}", font=("Arial", 8), 
                          bg=CARD_BG, fg="#999").pack(side="right")
+
+                # Cancel button
+                def cancel_booking(booking_data=booking):
+                    def confirm_cancel():
+                        reason = reason_entry.get().strip()
+                        save_cancellation_record(
+                            self.current_user,
+                            booking_data['booking_id'],
+                            booking_data['appointment_date'],
+                            booking_data['services'],
+                            booking_data['total_amount'],
+                            reason
+                        )
+                        messagebox.showinfo("Success", "Booking cancelled successfully!")
+                        cancel_window.destroy()
+                        bookings_window.destroy()
+                        self.view_bookings()
+
+                    cancel_window = tk.Toplevel(bookings_window)
+                    cancel_window.title("Cancel Booking")
+                    cancel_window.geometry("400x200")
+                    cancel_window.configure(bg="white")
+                    cancel_window.resizable(False, False)
+
+                    tk.Label(cancel_window, text="Cancel Booking", font=("Arial", 14, "bold"), 
+                            bg="white", fg=ACCENT).pack(pady=15)
+                    tk.Label(cancel_window, text="Reason for cancellation (optional):", font=("Arial", 10), 
+                            bg="white").pack(anchor="w", padx=20, pady=(5, 2))
+                    
+                    reason_entry = tk.Entry(cancel_window, font=("Arial", 10), width=40, border=1, relief="solid")
+                    reason_entry.pack(padx=20, pady=(0, 15), fill="x")
+
+                    button_frame = tk.Frame(cancel_window, bg="white")
+                    button_frame.pack(fill="x", padx=20, pady=10)
+                    tk.Button(button_frame, text="Confirm Cancel", command=confirm_cancel, 
+                             bg="#FF6B6B", fg="white", font=("Arial", 10, "bold"), 
+                             border=0, relief="flat", cursor="hand2").pack(side="left", padx=5)
+                    tk.Button(button_frame, text="Keep Booking", command=cancel_window.destroy, 
+                             bg="#999", fg="white", font=("Arial", 10, "bold"), 
+                             border=0, relief="flat", cursor="hand2").pack(side="left", padx=5)
+
+                cancel_btn = tk.Button(booking_card, text="❌ Cancel Booking", command=cancel_booking, 
+                                      bg="#FF6B6B", fg="white", font=("Arial", 9, "bold"), 
+                                      border=0, relief="flat", cursor="hand2", padx=10, pady=5)
+                cancel_btn.pack(pady=(10, 0), fill="x")
 
             canvas.pack(side="left", fill="both", expand=True)
             scrollbar.pack(side="right", fill="y")
