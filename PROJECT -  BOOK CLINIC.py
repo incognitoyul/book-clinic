@@ -190,7 +190,7 @@ class ClinicBookingApp:
         self.selected_date = tk.StringVar()
 
         self.create_welcome_page()
-# try lang lods
+
     def clear_window(self):
         for widget in self.root.winfo_children():
             widget.destroy()
@@ -254,7 +254,7 @@ class ClinicBookingApp:
 
         
         tk.Label(content_frame, text="Your Health, One Click Away", font=("Arial", 14), 
-                bg="white", fg="#666").pack(pad y=(0, 30))
+                bg="white", fg="#666").pack(pady=(0, 30))
 
         
         features = ["✓ Easy Appointment Booking", "✓ Multiple Services", "✓ Secure & Reliable", "✓ 24/7 Support"]
@@ -355,7 +355,7 @@ class ClinicBookingApp:
         
         tk.Label(left_panel, text="Your Health, One Click Away", font=("Arial", 20, "bold"), 
                 bg="white", fg="#0B8FA3").pack(pady=(25, 5))
-        tk.Label(left_panel, text="Clinic Booking System", font=("Arial", 11), 
+        tk.Label(left_panel, text="Start managing your health today.", font=("Arial", 11), 
                 bg="white", fg="#999").pack(pady=(0, 25))
 
         
@@ -418,14 +418,27 @@ class ClinicBookingApp:
 
         
         try:
-            anime_img = Image.open("log in anime doctor.png")
+            anime_img = Image.open("MAIN LOG IN PICTURE.png")
             
-            anime_img = anime_img.resize((int(container_width * 0.4), int(container_height * 0.8)), Image.LANCZOS)
+            
+            img_width, img_height = anime_img.size
+            max_width = int(container_width * 0.55)
+            max_height = int(container_height * 0.85)
+            
+            
+            if img_width > 0 and img_height > 0:
+                scale = min(max_width / img_width, max_height / img_height)
+                
+                new_width = int(img_width * scale)
+                new_height = int(img_height * scale)
+                anime_img = anime_img.resize((new_width, new_height), Image.LANCZOS)
+            
             self.anime_photo = ImageTk.PhotoImage(anime_img)
             anime_label = tk.Label(right_panel, image=self.anime_photo, bg="#B8E6F0")
             anime_label.pack(expand=True, padx=20, pady=20)
-        except Exception:
-            tk.Label(right_panel, text="🏥\nAnime Doctor\nImage", font=("Arial", 16, "bold"), 
+        except Exception as e:
+            print(f"Error loading image: {e}")
+            tk.Label(right_panel, text="🏥\nMain Login\nPicture", font=("Arial", 16, "bold"), 
                     bg="#B8E6F0", fg="#0B8FA3", justify="center").pack(expand=True)
 
         
