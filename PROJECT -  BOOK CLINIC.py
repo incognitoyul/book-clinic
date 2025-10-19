@@ -125,7 +125,18 @@ class ClinicBookingApp:
         """Set dental.jpeg as background for the entire page."""
         try:
             bg_img = Image.open("dental.jpeg")
-            bg_img = bg_img.resize((1200, 800), Image.LANCZOS)
+            # Get current window dimensions
+            window_width = self.root.winfo_width()
+            window_height = self.root.winfo_height()
+            
+            # If window dimensions are not yet set, use defaults
+            if window_width <= 1:
+                window_width = 1200
+            if window_height <= 1:
+                window_height = 800
+            
+            # Resize image to fit window
+            bg_img = bg_img.resize((window_width, window_height), Image.LANCZOS)
             self.bg_photo = ImageTk.PhotoImage(bg_img)
             bg_label = tk.Label(self.root, image=self.bg_photo)
             bg_label.image = self.bg_photo  # Keep a reference
@@ -248,7 +259,7 @@ class ClinicBookingApp:
 
         image_files = {
             "Dental Cleaning": "dental.jpeg",
-            "Physical Therapy": "pt.jpg",
+            "Physical Therapy": "physical therapy.jpeg",
             "Eye Check-up": "eye.jpg"
         }
 
@@ -274,7 +285,7 @@ class ClinicBookingApp:
             qty_frame = tk.Frame(card, bg=CARD_BG)
             qty_frame.pack(pady=5)
             tk.Label(qty_frame, text="Select:", bg=CARD_BG, fg=TEXT_COLOR).pack(side=tk.LEFT)
-            tk.Spinbox(qty_frame, from_=0, to=1, width=5, textvariable=qty_var).pack(side=tk.LEFT, padx=5)
+            tk.Spinbox(qty_frame, from_=0, to=10, width=5, textvariable=qty_var).pack(side=tk.LEFT, padx=5)
             self.cart[product] = qty_var
 
             col += 1
