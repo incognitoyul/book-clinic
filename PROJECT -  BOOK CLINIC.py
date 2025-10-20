@@ -1055,7 +1055,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         image_files = {
             "Dental Cleaning": "dental clinic.jpg",
             "Physical Therapy": "physical theraphy 1.jpg",
-            "Eye Check-up": "eye.jpg"
+            "Eye Check-up": "EYES CHECK UP.png"
         }
 
         columns = 3
@@ -1263,15 +1263,22 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
 
         def confirm_and_close():
             
-            save_booking(self.current_user, chosen_date, selected_services, total)
-            
-            self.show_receipt(self.current_user, chosen_date, selected_services, total)
+            if not save_booking(self.current_user, chosen_date, selected_services, total):
+                messagebox.showerror("Error", "Failed to save booking. Please try again.")
+                return
+                
             
             for v in self.cart.values():
                 v.set(0)
+                
+            
             summary_window.destroy()
             
+            
             messagebox.showinfo("Success", "Your appointment has been booked successfully!\n\nYou can view your bookings by clicking 'View My Bookings'.")
+            
+            
+            self.root.after(100, lambda: self.show_receipt(self.current_user, chosen_date, selected_services, total))
 
         confirm_btn = tk.Button(button_frame, text="✓ Confirm Booking", command=confirm_and_close,
                                bg="#0B8FA3", fg="white", font=("Arial", 12, "bold"),
@@ -1285,33 +1292,36 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
 
     def show_receipt(self, patient_name, appointment_date, services_list, total_amount):
         """Display a professional receipt page for the confirmed booking."""
-        
-        
-        if not save_booking(patient_name, appointment_date, services_list, total_amount):
-            messagebox.showerror("Error", "Failed to save booking. Please try again.")
-            return
-        
+        # Create the receipt window
         receipt_window = tk.Toplevel(self.root)
         receipt_window.title("Booking Receipt")
         receipt_window.geometry("500x700")
         receipt_window.configure(bg="white")
         receipt_window.resizable(False, False)
         
+        # Make sure the window stays on top
+        receipt_window.attributes('-topmost', True)
+        receipt_window.after_idle(receipt_window.attributes, '-topmost', False)
         
+        # Make the window modal
         receipt_window.transient(self.root)
         receipt_window.grab_set()
         
         
-        receipt_window.update_idletasks()
-        width = receipt_window.winfo_width()
-        height = receipt_window.winfo_height()
-        x = (receipt_window.winfo_screenwidth() // 2) - (width // 2)
-        y = (receipt_window.winfo_screenheight() // 2) - (height // 2)
-        receipt_window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+        window_width = 500
+        window_height = 700
+        screen_width = receipt_window.winfo_screenwidth()
+        screen_height = receipt_window.winfo_screenheight()
+        x = (screen_width // 2) - (window_width // 2)
+        y = (screen_height // 2) - (window_height // 2)
+        receipt_window.geometry(f'{window_width}x{window_height}+{x}+{y}')
         
         
         receipt_window.lift()
         receipt_window.focus_force()
+        
+        
+        receipt_window.deiconify()
 
         
         canvas = tk.Canvas(receipt_window, bg="white", highlightthickness=0)
