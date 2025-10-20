@@ -662,7 +662,7 @@ class ClinicBookingApp:
             
             
             img_width, img_height = anime_img.size
-            max_width = int(container_width * 0.55)
+            max_width = int(container_width * 0.90)
             max_height = int(container_height * 0.98)
             
             
@@ -983,7 +983,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
                     
                     save_forgot_password_record(username, new_password)
                     
-                    messagebox.showinfo("Success", "Password reset successfully! Please login with your new password.")
+                    self.show_success_dialog("Success", "Password reset successfully!\n\nPlease login with your new password.")
                     new_pass_window.destroy()
                     forgot_window.destroy()
                 except Exception as e:
@@ -1013,7 +1013,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         else:
             users[username] = password
             save_user(username, password)
-            messagebox.showinfo("Success", "Registration successful! Please login.")
+            self.show_success_dialog("Success", "Registration successful!\n\nPlease login with your new account.")
             self.create_login_page()
 
     def create_main_interface(self):
@@ -1032,7 +1032,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
 
         date_frame = tk.Frame(header, bg="#0B8FA3")
         date_frame.pack(side="right", padx=20, pady=15)
-        tk.Label(date_frame, text="Pick appointment date:", bg="#0B8FA3", fg="white", font=("Arial", 10)).pack(side="left", padx=(0, 10))
+        tk.Label(date_frame, text="Pick Appointment Date:", bg="#0B8FA3", fg="white", font=("Arial", 10)).pack(side="left", padx=(0, 10))
         date_entry = DateEntry(date_frame, textvariable=self.selected_date, width=12, background="#0B8FA3",
                                foreground="white", borderwidth=2)
         date_entry.pack(side="left")
@@ -1275,10 +1275,9 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
             summary_window.destroy()
             
             
-            messagebox.showinfo("Success", "Your appointment has been booked successfully!\n\nYou can view your bookings by clicking 'View My Bookings'.")
+            self.show_success_dialog("Booking Confirmed", "Your appointment has been booked successfully!\n\nYou can view your bookings by clicking 'View My Bookings'.")
             
-            
-            self.root.after(100, lambda: self.show_receipt(self.current_user, chosen_date, selected_services, total))
+            self.show_receipt(self.current_user, chosen_date, selected_services, total)
 
         confirm_btn = tk.Button(button_frame, text="✓ Confirm Booking", command=confirm_and_close,
                                bg="#0B8FA3", fg="white", font=("Arial", 12, "bold"),
@@ -1451,7 +1450,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         footer_frame = tk.Frame(content_frame, bg="white")
         footer_frame.pack(fill="x", pady=(20, 0))
         
-        tk.Label(footer_frame, text="Nuvy Clinic - Your Health, One Click Away", 
+        tk.Label(footer_frame, text="Project - Nuvy Clinic", 
                 font=("Arial", 8), bg="white", fg="#999").pack(pady=(0, 5))
         tk.Label(footer_frame, text="For any inquiries, please contact: contact@nuvyclinic.com | +1 234 567 8900", 
                 font=("Arial", 7), bg="white", fg="#999").pack(pady=(0, 10))
@@ -1516,6 +1515,74 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         button_frame.pack(fill="x", padx=20, pady=15)
         ttk.Button(button_frame, text="Print Receipt", command=lambda: self.print_receipt(receipt_num, patient_name, appointment_date, services_list, total_amount)).pack(side="left", padx=5)
         ttk.Button(button_frame, text="Close", command=receipt_window.destroy).pack(side="left", padx=5)
+
+    def show_success_dialog(self, title, message):
+        """Show a custom success dialog with the dog clinic doctor image on the left."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title(title)
+        dialog.configure(bg='white')
+        
+        
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        
+        try:
+            img = Image.open("dog clinic doctor.jpg")
+            img = img.resize((150, 150), Image.Resampling.LANCZOS)
+            photo = ImageTk.PhotoImage(img)
+            
+            
+            img_label = tk.Label(dialog, image=photo, bg='white')
+            img_label.image = photo  
+            img_label.pack(side='left', padx=10, pady=10)
+        except Exception as e:
+            print(f"Error loading image: {e}")
+        
+        
+        content_frame = tk.Frame(dialog, bg='white')
+        content_frame.pack(side='right', fill='both', expand=True, padx=10, pady=10)
+        
+        
+        msg_label = tk.Label(
+            content_frame,
+            text=message,
+            bg='white',
+            fg='#2c3e50',
+            font=('Helvetica', 10),
+            justify='left',
+            wraplength=250
+        )
+        msg_label.pack(pady=(20, 20))
+        
+        
+        ok_btn = tk.Button(
+            content_frame,
+            text="OK",
+            command=dialog.destroy,
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            padx=20,
+            pady=5,
+            font=('Helvetica', 10, 'bold')
+        )
+        ok_btn.pack(pady=(0, 10))
+        
+        
+        dialog.update_idletasks()
+        width = 450
+        height = 200
+        x = (dialog.winfo_screenwidth() // 2) - (width // 2)
+        y = (dialog.winfo_screenheight() // 2) - (height // 2)
+        dialog.geometry(f'{width}x{height}+{x}+{y}')
+        
+        
+        dialog.lift()
+        dialog.focus_force()
+        
+        
+        self.root.wait_window(dialog)
 
     def print_receipt(self, receipt_num, patient_name, appointment_date, services_list, total_amount):
         """Handle print receipt functionality."""
@@ -1620,7 +1687,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
                             booking_data['total_amount'],
                             reason
                         )
-                        messagebox.showinfo("Success", "Booking cancelled successfully!")
+                        self.show_success_dialog("Success", "Booking cancelled successfully!")
                         cancel_window.destroy()
                         bookings_window.destroy()
                         self.view_bookings()
