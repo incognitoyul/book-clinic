@@ -33,38 +33,41 @@ TEXT_COLOR = "#4A4A4A"
 def load_users():
     """Load users from users.txt file."""
     global users
-    try:
-        
-        os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
-        
-        
-        if not os.path.exists(USERS_FILE):
-            with open(USERS_FILE, 'w', encoding='utf-8') as f:
-                pass  
-        
-        
-        users.clear() 
-        with open(USERS_FILE, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        user_data = json.loads(line)
-                        users[user_data['username']] = user_data['password']
-                    except json.JSONDecodeError:
-                        print(f"Warning: Could not parse line: {line}")
-                        continue
-                    except KeyError as e:
-                        print(f"Warning: Missing required field in user data: {e}")
-                        continue
-    except Exception as e:
-        print(f"Error loading users: {e}")
-        
+    users = {}
+    
+  
+    os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
+    
+    
+    if not os.path.exists(USERS_FILE):
         try:
             with open(USERS_FILE, 'w', encoding='utf-8') as f:
                 pass
-        except Exception as e2:
-            print(f"Failed to create users file: {e2}")
+            print("Created new empty users file")
+            return users
+        except Exception as e:
+            print(f"Failed to create users file: {e}")
+            return users
+    
+    
+    try:
+        with open(USERS_FILE, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    user_data = json.loads(line)
+                    if 'username' in user_data and 'password' in user_data:
+                        users[user_data['username']] = user_data['password']
+                except (json.JSONDecodeError, KeyError) as e:
+                    print(f"Error parsing user data: {e}")
+                    continue
+    except Exception as e:
+        print(f"Error reading users file: {e}")
+    
+    print(f"Loaded {len(users)} users from file")
+    return users
 
 
 def save_user(username, password):
@@ -387,7 +390,7 @@ def load_cancellations_for_user(username):
 class ClinicBookingApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Nuvy Clinic — Your Health, One Click Away")
+        self.root.title("Nuvy Clinic Project")
         
         self.root.state('zoomed')
         self.root.configure(bg=MAIN_BG)
@@ -456,7 +459,7 @@ class ClinicBookingApp:
             window_height = 900
 
         
-        main_container = tk.Frame(self.root, bg="white", relief="flat", bd=0, highlightbackground="#0B8FA3", highlightthickness=2)
+        main_container = tk.Frame(self.root, bg="white", relief="flat", bd=0, highlightbackground="#0B43A3", highlightthickness=2)
         main_container.place(relx=0.5, rely=0.5, anchor="center", width=int(window_width * 0.8), height=int(window_height * 0.7))
 
         
@@ -1032,7 +1035,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
 
         date_frame = tk.Frame(header, bg="#0B8FA3")
         date_frame.pack(side="right", padx=20, pady=15)
-        tk.Label(date_frame, text="Pick Appointment Date:", bg="#0B8FA3", fg="white", font=("Arial", 10)).pack(side="left", padx=(0, 10))
+        tk.Label(date_frame, text="Pick Appointment Date:", bg="#0B8FA3", fg="white", font=("Arial", 15)).pack(side="left", padx=(0, 10))
         date_entry = DateEntry(date_frame, textvariable=self.selected_date, width=12, background="#0B8FA3",
                                foreground="white", borderwidth=2)
         date_entry.pack(side="left")
@@ -1044,9 +1047,9 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         
         title_frame = tk.Frame(main_frame, bg="white")
         title_frame.pack(fill="x", pady=(0, 20))
-        tk.Label(title_frame, text="Select Services", font=("Arial", 16, "bold"),
+        tk.Label(title_frame, text="Select Services", font=("Arial", 20, "bold"),
                  bg="white", fg="#0B8FA3").pack(anchor="w")
-        tk.Label(title_frame, text="Choose the services you need for your appointment", font=("Arial", 10),
+        tk.Label(title_frame, text="Choose the services you need for your appointment", font=("Arial", 15),
                  bg="white", fg="#666").pack(anchor="w", pady=(5, 0))
         
         products_frame = tk.Frame(main_frame, bg="white")
@@ -1291,18 +1294,18 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
 
     def show_receipt(self, patient_name, appointment_date, services_list, total_amount):
         """Display a professional receipt page for the confirmed booking."""
-        # Create the receipt window
+    
         receipt_window = tk.Toplevel(self.root)
         receipt_window.title("Booking Receipt")
         receipt_window.geometry("500x700")
         receipt_window.configure(bg="white")
         receipt_window.resizable(False, False)
         
-        # Make sure the window stays on top
+        
         receipt_window.attributes('-topmost', True)
         receipt_window.after_idle(receipt_window.attributes, '-topmost', False)
         
-        # Make the window modal
+        
         receipt_window.transient(self.root)
         receipt_window.grab_set()
         
@@ -1589,40 +1592,106 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         messagebox.showinfo("Print", f"Receipt #{receipt_num} sent to printer.\n\nPatient: {patient_name}\nDate: {appointment_date}\nTotal: ₱{total_amount}")
     
     def view_bookings(self):
-        """Display all bookings for the logged-in user."""
+        """Display all bookings for the logged-in user with a professional layout."""
         bookings = load_bookings_for_user(self.current_user)
         
+        
         bookings_window = tk.Toplevel(self.root)
-        bookings_window.title("My Bookings")
-        bookings_window.geometry("800x650")
-        bookings_window.configure(bg="#E8E8E8")
+        bookings_window.title("Appointment History - Nuvy Clinic")
+        bookings_window.geometry("900x700")
+        bookings_window.configure(bg="#F5F7FA")
 
         
-        header_frame = tk.Frame(bookings_window, bg="#0B8FA3", height=70)
+        header_frame = tk.Frame(bookings_window, bg="#0B8FA3", height=100)
         header_frame.pack(fill="x")
         
+       
         header_content = tk.Frame(header_frame, bg="#0B8FA3")
-        header_content.pack(fill="both", expand=True, padx=20, pady=15)
+        header_content.pack(fill="both", expand=True, padx=30, pady=15)
         
-        tk.Label(header_content, text="📋 My Bookings", font=("Arial", 18, "bold"), 
-                 bg="#0B8FA3", fg="white").pack(side="left")
-        tk.Label(header_content, text=f"Patient: {self.current_user}", font=("Arial", 11), 
-                 bg="#0B8FA3", fg="white").pack(side="right")
+        
+        logo_frame = tk.Frame(header_content, bg="#0B8FA3")
+        logo_frame.pack(side="left")
+        
+        try:
+            
+            img = Image.open("dog clinic doctor.jpg")
+            img = img.resize((60, 60), Image.Resampling.LANCZOS)
+            photo = ImageTk.PhotoImage(img)
+            logo_label = tk.Label(logo_frame, image=photo, bg="#0B8FA3")
+            logo_label.image = photo
+            logo_label.pack(side="left", padx=(0, 15))
+        except Exception as e:
+            print(f"Error loading logo: {e}")
+            
+            tk.Label(logo_frame, text="🐾", font=("Arial", 24), 
+                    bg="#0B8FA3", fg="white").pack(side="left", padx=(0, 15))
+        
+        
+        title_frame = tk.Frame(logo_frame, bg="#0B8FA3")
+        title_frame.pack(side="left")
+        
+        tk.Label(title_frame, text="Nuvy Clinic", 
+                font=("Arial", 18, "bold"), 
+                bg="#0B8FA3", fg="white").pack(anchor="w")
+        tk.Label(title_frame, text="Your Health, Our Priority", 
+                font=("Arial", 10), 
+                bg="#0B8FA3", fg="#E0F7FF").pack(anchor="w")
+        
+        
+        user_info_frame = tk.Frame(header_content, bg="#0B8FA3")
+        user_info_frame.pack(side="right")
+        
+        current_date = datetime.now().strftime("%B %d, %Y")
+        tk.Label(user_info_frame, text=f"Date: {current_date}", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(anchor="e")
+        tk.Label(user_info_frame, text=f"Patient: {self.current_user}", 
+                font=("Arial", 10, "bold"), 
+                bg="#0B8FA3", fg="white").pack(anchor="e", pady=(5, 0))
+        
+        
+        title_label = tk.Label(bookings_window, 
+                             text="Your Appointment History", 
+                             font=("Arial", 16, "bold"), 
+                             bg="#F5F7FA", 
+                             fg="#2C3E50",
+                             pady=15)
+        title_label.pack(fill="x")
 
         
         content_frame = tk.Frame(bookings_window, bg="#E8E8E8")
         content_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         if not bookings:
-            empty_frame = tk.Frame(content_frame, bg="white", relief="solid", bd=1)
-            empty_frame.pack(fill="both", expand=True, padx=10, pady=10)
-            tk.Label(empty_frame, text="📭 No bookings found.", font=("Arial", 14), 
-                     bg="white", fg="#999").pack(pady=80)
+            
+            empty_frame = tk.Frame(content_frame, bg="white", bd=0, highlightthickness=0)
+            empty_frame.pack(fill="both", expand=True, pady=40)
+            
+            
+            tk.Label(empty_frame, text="📋", font=("Arial", 48), 
+                    bg="white", fg="#D1D5DB").pack(pady=(40, 20))
+            
+            tk.Label(empty_frame, text="No Appointments Found", 
+                    font=("Arial", 14, "bold"), 
+                    bg="white", fg="#4B5563").pack(pady=(0, 10))
+                    
+            tk.Label(empty_frame, text="You don't have any upcoming appointments.", 
+                    font=("Arial", 10), 
+                    bg="white", fg="#6B7280").pack(pady=(0, 30))
+                    
+            
+            book_btn = tk.Button(empty_frame, text="Book an Appointment",
+                               command=lambda: [bookings_window.destroy(), self.checkout()],
+                               bg="#0B8FA3", fg="white", 
+                               font=("Arial", 10, "bold"),
+                               relief="flat", bd=0, padx=20, pady=8)
+            book_btn.pack()
+            
         else:
             
-            canvas = tk.Canvas(content_frame, bg="white", highlightthickness=0)
+            canvas = tk.Canvas(content_frame, bg="#F5F7FA", highlightthickness=0)
             scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=canvas.yview)
-            scrollable_frame = tk.Frame(canvas, bg="white")
+            scrollable_frame = tk.Frame(canvas, bg="#F5F7FA")
 
             scrollable_frame.bind(
                 "<Configure>",
@@ -1633,47 +1702,171 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
             canvas.configure(yscrollcommand=scrollbar.set)
 
             
+            stats_frame = tk.Frame(scrollable_frame, bg="#F5F7FA")
+            stats_frame.pack(fill="x", pady=(0, 20))
+            
+            total_bookings = len(bookings)
+            confirmed = sum(1 for b in bookings if b['status'].lower() == 'confirmed')
+            
+            
+            stats_card = tk.Frame(stats_frame, bg="white", bd=0, highlightthickness=1, 
+                                highlightbackground="#E5E7EB", highlightthickness2=1)
+            stats_card.pack(fill="x", padx=5, pady=5)
+            
+            tk.Label(stats_card, text="Appointment Summary", 
+                    font=("Arial", 10, "bold"), 
+                    bg="white", fg="#4B5563", anchor="w").pack(fill="x", padx=15, pady=(15, 10))
+            
+            stats_grid = tk.Frame(stats_card, bg="white")
+            stats_grid.pack(fill="x", padx=15, pady=(0, 15))
+            
+            
+            tk.Label(stats_grid, text=str(total_bookings), 
+                    font=("Arial", 18, "bold"), 
+                    bg="white", fg="#0B8FA3").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+            tk.Label(stats_grid, text="Total Appointments", 
+                    font=("Arial", 9), 
+                    bg="white", fg="#6B7280").grid(row=1, column=0, padx=10, sticky="w")
+            
+            d
+            tk.Label(stats_grid, text=str(confirmed), 
+                    font=("Arial", 18, "bold"), 
+                    bg="white", fg="#10B981").grid(row=0, column=1, padx=10, pady=5, sticky="w")
+            tk.Label(stats_grid, text="Confirmed", 
+                    font=("Arial", 9), 
+                    bg="white", fg="#6B7280").grid(row=1, column=1, padx=10, sticky="w")
+            
+            
+            upcoming = sum(1 for b in bookings if b['status'].lower() == 'confirmed' and 
+                          datetime.strptime(b['appointment_date'], '%Y-%m-%d') >= datetime.now())
+            tk.Label(stats_grid, text=str(upcoming), 
+                    font=("Arial", 18, "bold"), 
+                    bg="white", fg="#3B82F6").grid(row=0, column=2, padx=10, pady=5, sticky="w")
+            tk.Label(stats_grid, text="Upcoming", 
+                    font=("Arial", 9), 
+                    bg="white", fg="#6B7280").grid(row=1, column=2, padx=10, sticky="w")
+            
+            
+            tk.Frame(scrollable_frame, bg="#E5E7EB", height=1).pack(fill="x", pady=10)
+            
+            
+            tk.Label(scrollable_frame, text="Your Appointments", 
+                    font=("Arial", 12, "bold"), 
+                    bg="#F5F7FA", fg="#374151").pack(anchor="w", pady=(10, 15), padx=5)
+
+            
             for booking in bookings:
-                booking_card = tk.Frame(scrollable_frame, bg="white", bd=2, relief="solid", highlightbackground="#0B8FA3", highlightthickness=2)
-                booking_card.pack(fill="x", pady=10, padx=5)
-
                 
-                header_row = tk.Frame(booking_card, bg="#F5F5F5", relief="solid", bd=1)
-                header_row.pack(fill="x", padx=15, pady=15)
+                booking_card = tk.Frame(scrollable_frame, bg="white", 
+                                      bd=0, highlightthickness=1, 
+                                      highlightbackground="#E5E7EB",
+                                      highlightthickness2=1)
+                booking_card.pack(fill="x", pady=(0, 15), padx=5)
                 
-                tk.Label(header_row, text=f"🔖 Booking ID: {booking['booking_id']}", font=("Arial", 11, "bold"), 
-                         bg="#F5F5F5", fg="#0B8FA3").pack(side="left")
                 
-                status_color = "#4CAF50" if booking['status'].lower() == "confirmed" else "#FFA500"
-                tk.Label(header_row, text=f"Status: {booking['status'].upper()}", font=("Arial", 10, "bold"), 
-                         bg="#F5F5F5", fg=status_color).pack(side="right")
-
+                status_color = "#10B981" if booking['status'].lower() == "confirmed" else "#F59E0B"
+                header_bg = "#ECFDF5" if booking['status'].lower() == "confirmed" else "#FFFBEB"
+                
+                header = tk.Frame(booking_card, bg=header_bg, height=40)
+                header.pack(fill="x", pady=(0, 1))
+                
+                
+                status_dot = tk.Frame(header, bg=status_color, width=8, height=8)
+                status_dot.place(relx=0.02, rely=0.5, anchor='w')
+                
+                
+                tk.Label(header, text=f"#{booking['booking_id']}", 
+                        font=("Arial", 9, "bold"), 
+                        bg=header_bg, fg="#1F2937").place(relx=0.05, rely=0.5, anchor='w')
+                
+                tk.Label(header, text=booking['status'].upper(), 
+                        font=("Arial", 8, "bold"), 
+                        bg=status_color, fg="white",
+                        padx=8, pady=2).place(relx=0.98, rely=0.5, anchor='e')
+                
                 
                 content = tk.Frame(booking_card, bg="white")
-                content.pack(fill="both", expand=True, padx=15, pady=15)
+                content.pack(fill="x", padx=15, pady=15)
                 
-                tk.Label(content, text=f"📅 Appointment Date: {booking['appointment_date']}", 
-                         font=("Arial", 10, "bold"), bg="white", fg="#333").pack(anchor="w", pady=(0, 10))
-
                 
-                tk.Label(content, text="Services Booked:", font=("Arial", 10, "bold"), 
-                         bg="white", fg="#0B8FA3").pack(anchor="w", pady=(0, 5))
+                details_frame = tk.Frame(content, bg="white")
+                details_frame.pack(side="left", fill="x", expand=True)
                 
-                for service in booking['services']:
+                
+                tk.Label(details_frame, text="Appointment Date", 
+                        font=("Arial", 8), 
+                        bg="white", fg="#6B7280").pack(anchor="w")
+                
+                tk.Label(details_frame, text=booking['appointment_date'], 
+                        font=("Arial", 12, "bold"), 
+                        bg="white", fg="#111827").pack(anchor="w", pady=(0, 15))
+                
+                
+                tk.Label(details_frame, text="Services", 
+                        font=("Arial", 8), 
+                        bg="white", fg="#6B7280").pack(anchor="w")
+                
+                services_text = ""
+                for i, service in enumerate(booking['services']):
                     service_name, qty, price = service
-                    tk.Label(content, text=f"  ✓ {service_name} × {qty} = ₱{price}", 
-                             font=("Arial", 9), bg="white", fg="#333").pack(anchor="w", pady=2)
-
+                    services_text += f"• {service_name} (x{qty}) - ₱{price}\n"
                 
-                separator = tk.Frame(content, bg="#E0E0E0", height=1)
-                separator.pack(fill="x", pady=10)
+                tk.Label(details_frame, text=services_text.strip(), 
+                        font=("Arial", 9), 
+                        bg="white", fg="#4B5563",
+                        justify="left").pack(anchor="w", pady=(0, 10))
                 
-                total_frame = tk.Frame(content, bg="white")
-                total_frame.pack(fill="x", pady=(0, 10))
-                tk.Label(total_frame, text=f"💰 Total Amount: ₱{booking['total_amount']}", font=("Arial", 11, "bold"), 
-                         bg="white", fg="#D32F2F").pack(side="left")
-                tk.Label(total_frame, text=f"Booked on: {booking['created_at']}", font=("Arial", 8), 
-                         bg="white", fg="#999").pack(side="right")
+                
+                amount_frame = tk.Frame(content, bg="white")
+                amount_frame.pack(side="right", padx=10)
+                
+                tk.Label(amount_frame, text="Total Amount", 
+                        font=("Arial", 8), 
+                        bg="white", fg="#6B7280").pack(anchor="e")
+                
+                tk.Label(amount_frame, text=f"₱{booking['total_amount']}", 
+                        font=("Arial", 16, "bold"), 
+                        bg="white", fg="#0B8FA3").pack(anchor="e")
+                
+                
+                footer = tk.Frame(booking_card, bg="#F9FAFB", height=40)
+                footer.pack(fill="x", side="bottom", pady=(1, 0))
+                
+                
+                booking_date = datetime.strptime(booking['created_at'], '%Y-%m-%d %H:%M:%S')
+                formatted_date = booking_date.strftime("%b %d, %Y at %I:%M %p")
+                
+                tk.Label(footer, text=f"Booked on {formatted_date}", 
+                        font=("Arial", 8), 
+                        bg="#F9FAFB", fg="#6B7280").place(relx=0.02, rely=0.5, anchor='w')
+                
+                
+                btn_frame = tk.Frame(footer, bg="#F9FAFB")
+                btn_frame.place(relx=0.98, rely=0.5, anchor='e')
+                
+                
+                if booking['status'].lower() == 'confirmed' and \
+                   datetime.strptime(booking['appointment_date'], '%Y-%m-%d') > datetime.now():
+                    cancel_btn = tk.Button(btn_frame, text="Cancel",
+                                         command=lambda b=booking: self.cancel_ooking(b),
+                                         bg="#FEE2E2", fg="#B91C1C",
+                                         font=("Arial", 8, "bold"),
+                                         relief="flat", bd=0, padx=12, pady=4)
+                    cancel_btn.pack(side="left", padx=5)
+                
+               
+                print_btn = tk.Button(btn_frame, text="Print Receipt",
+                                    command=lambda b=booking: self.print_receipt(
+                                        b['booking_id'], 
+                                        self.current_user, 
+                                        b['appointment_date'], 
+                                        b['services'], 
+                                        b['total_amount']
+                                    ),
+                                    bg="#E0F2FE", fg="#0369A1",
+                                    font=("Arial", 8, "bold"),
+                                    relief="flat", bd=0, padx=12, pady=4)
+                print_btn.pack(side="left")
 
                 
                 def cancel_booking(booking_data=booking):
