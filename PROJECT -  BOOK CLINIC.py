@@ -224,7 +224,7 @@ def load_bookings_for_user(username):
                     try:
                         booking_data = json.loads(line)
                         
-                        # Convert services to consistent format
+                        
                         if 'services' in booking_data and isinstance(booking_data['services'], list):
                             services = []
                             for service in booking_data['services']:
