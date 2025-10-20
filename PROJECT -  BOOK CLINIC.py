@@ -125,71 +125,148 @@ def save_user(username, password):
 def save_booking(patient_name, appointment_date, services_list, total_amount):
     """Save booking record to bookings.txt file."""
     try:
-        print(f"Attempting to save booking for: {patient_name}")
+        print(f"\n{'='*50}")
+        print(f"SAVE_BOOKING DEBUG - Starting to save booking")
+        print(f"Patient: {patient_name}")
+        print(f"Appointment Date: {appointment_date}")
+        print(f"Total Amount: {total_amount}")
+        print(f"Services List: {services_list}")
+        print(f"Type of services_list: {type(services_list)}")
         
-        
+        # Ensure the booking_data directory exists
         os.makedirs(os.path.dirname(BOOKINGS_FILE), exist_ok=True)
-        print(f"Directory exists or created: {os.path.dirname(BOOKINGS_FILE)}")
+        print(f"Directory verified: {os.path.dirname(BOOKINGS_FILE)}")
         
-       
+        # Process services list to ensure it's serializable
         serializable_services = []
         for service in services_list:
-            if isinstance(service, tuple) and len(service) >= 3:
+            if isinstance(service, (list, tuple)) and len(service) >= 3:
+                # Convert tuple/list to dict
                 service_dict = {
-                    'service_name': service[0],
-                    'quantity': service[1],
-                    'subtotal': service[2]
+                    'service_name': str(service[0]),
+                    'quantity': int(service[1]),
+                    'subtotal': float(service[2])
                 }
                 serializable_services.append(service_dict)
             elif isinstance(service, dict):
-                serializable_services.append(service)
+                # Ensure all values are serializable
+                service_dict = {
+                    'service_name': str(service.get('service_name', 'Unknown Service')),
+                    'quantity': int(service.get('quantity', 1)),
+                    'subtotal': float(service.get('subtotal', 0))
+                }
+                serializable_services.append(service_dict)
+            else:
+                print(f"Warning: Invalid service format: {service}")
         
-        
+        # Prepare booking data
         booking_data = {
             "booking_id": f"BK-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-            "patient_name": patient_name,
-            "appointment_date": appointment_date,
+            "patient_name": str(patient_name),
+            "appointment_date": str(appointment_date),
             "services": serializable_services,
-            "total_amount": total_amount,
+            "total_amount": float(total_amount),
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": "confirmed"
         }
         
-       
-        print(f"Writing to file: {BOOKINGS_FILE}")
+        print(f"Prepared booking data: {booking_data}")
         
+        # Write to file
+        print(f"Attempting to write to: {BOOKINGS_FILE}")
         
         try:
-            with open(BOOKINGS_FILE, 'a', encoding='utf-8') as f:
-                json_str = json.dumps(booking_data)
-                print(f"Writing booking data: {json_str}")
-                f.write(json_str + '\n')
-                f.flush()  
-                os.fsync(f.fileno())  
-                print("Booking write successful")
-        except IOError as e:
-            print(f"IOError writing booking to file: {e}")
-            
+            # First try to append to existing file
             try:
-                with open(BOOKINGS_FILE, 'w', encoding='utf-8') as f:
-                    json_str = json.dumps(booking_data)
+                with open(BOOKINGS_FILE, 'a', encoding='utf-8') as f:
+                    json_str = json.dumps(booking_data, ensure_ascii=False)
+                    print(f"Writing JSON: {json_str}")
                     f.write(json_str + '\n')
-                    print("Created new bookings file and wrote data")
-            except Exception as e2:
-                print(f"Failed to create new bookings file: {e2}")
-                return False
-        
-        print(f"Booking for {patient_name} saved successfully")
-        return True
-        
+                    f.flush()
+                    os.fsync(f.fileno())
+                    print("Successfully wrote to existing file")
+                    return True
+                    
+            except (IOError, json.JSONEncodeError) as e:
+                print(f"Error writing to file (will try to create new file): {e}")
+                
+                # If append fails, try to create a new file
+                with open(BOOKINGS_FILE, 'w', encoding='utf-8') as f:
+                    json_str = json.dumps(booking_data, ensure_ascii=False)
+                    print(f"Creating new file with data: {json_str}")
+                    f.write(json_str + '\n')
+                    print("Successfully created new file and wrote data")
+                    return True
+                    
+        except Exception as e:
+            print(f"Critical error saving booking: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+            
     except Exception as e:
-        print(f"Error saving booking: {str(e)}")
-        print(f"Error type: {type(e).__name__}")
+        print(f"Unexpected error in save_booking: {e}")
         import traceback
         traceback.print_exc()
         return False
-    except Exception as e:
-        print(f"Error saving booking: {e}")
+
+def load_bookings_for_user(username):
+    """Load all bookings for a specific user from bookings.txt file."""
+    bookings = []
+    if os.path.exists(BOOKINGS_FILE):
+        try:
+            with open(BOOKINGS_FILE, 'r', encoding='utf-8') as f:
+                for line_num, line in enumerate(f, 1):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    try:
+                        booking_data = json.loads(line)
+                        
+                        # Convert services to consistent format
+                        if 'services' in booking_data and isinstance(booking_data['services'], list):
+                            services = []
+                            for service in booking_data['services']:
+                                if isinstance(service, dict):
+                                    services.append((
+                                        str(service.get('service_name', 'Unknown Service')),
+                                        int(service.get('quantity', 1)),
+                                        float(service.get('subtotal', 0))
+                                    ))
+                                elif isinstance(service, (list, tuple)) and len(service) >= 3:
+                                    services.append((
+                                        str(service[0]),
+                                        int(service[1]),
+                                        float(service[2])
+                                    ))
+                            booking_data['services'] = services
+                        
+                        if booking_data.get('patient_name') == username:
+                            
+                            if 'booking_id' not in booking_data:
+                                booking_data['booking_id'] = f"BK-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                            if 'created_at' not in booking_data:
+                                booking_data['created_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            if 'status' not in booking_data:
+                                booking_data['status'] = "confirmed"
+                                
+                            bookings.append(booking_data)
+                            
+                    except json.JSONDecodeError as je:
+                        print(f"Error parsing JSON on line {line_num}: {je}")
+                        print(f"Problematic line: {line}")
+                    except Exception as e:
+                        print(f"Error processing booking on line {line_num}: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        
+        except Exception as e:
+            print(f"Error reading bookings file: {e}")
+            import traceback
+            traceback.print_exc()
+            
+    return sorted(bookings, key=lambda x: x.get('appointment_date', ''), reverse=True)
 
 
 def load_bookings_for_user(username):
@@ -1185,15 +1262,15 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         button_frame.pack(fill="x", pady=(10, 0))
 
         def confirm_and_close():
-            # Save the booking to the file
+            
             save_booking(self.current_user, chosen_date, selected_services, total)
-            # Show receipt
+            
             self.show_receipt(self.current_user, chosen_date, selected_services, total)
-            # Reset the cart
+            
             for v in self.cart.values():
                 v.set(0)
             summary_window.destroy()
-            # Show success message
+            
             messagebox.showinfo("Success", "Your appointment has been booked successfully!\n\nYou can view your bookings by clicking 'View My Bookings'.")
 
         confirm_btn = tk.Button(button_frame, text="✓ Confirm Booking", command=confirm_and_close,
@@ -1209,7 +1286,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
     def show_receipt(self, patient_name, appointment_date, services_list, total_amount):
         """Display a professional receipt page for the confirmed booking."""
         
-        # Save the booking first
+        
         if not save_booking(patient_name, appointment_date, services_list, total_amount):
             messagebox.showerror("Error", "Failed to save booking. Please try again.")
             return
@@ -1220,11 +1297,11 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         receipt_window.configure(bg="white")
         receipt_window.resizable(False, False)
         
-        # Make the receipt window appear on top
+        
         receipt_window.transient(self.root)
         receipt_window.grab_set()
         
-        # Center the window on screen
+        
         receipt_window.update_idletasks()
         width = receipt_window.winfo_width()
         height = receipt_window.winfo_height()
@@ -1232,11 +1309,11 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         y = (receipt_window.winfo_screenheight() // 2) - (height // 2)
         receipt_window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
         
-        # Bring window to front and focus it
+        
         receipt_window.lift()
         receipt_window.focus_force()
 
-        # Create a scrollable frame for the receipt content
+        
         canvas = tk.Canvas(receipt_window, bg="white", highlightthickness=0)
         scrollbar = ttk.Scrollbar(receipt_window, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas, bg="white")
@@ -1249,22 +1326,22 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Pack the canvas and scrollbar
+
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
-        # Header
+        
         header_frame = tk.Frame(scrollable_frame, bg=ACCENT, height=80)
         header_frame.pack(fill="x")
         tk.Label(header_frame, text="🏥 CLINIC BOOKING RECEIPT", 
                 font=("Arial", 16, "bold"), 
                 bg=ACCENT, fg="white").pack(pady=15)
         
-        # Main content frame
+        
         content_frame = tk.Frame(scrollable_frame, bg="white")
         content_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
-        # Receipt info
+        
         receipt_num = f"RCP-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         tk.Label(content_frame, text="Nuvy Clinic", 
                 font=("Arial", 14, "bold"), 
@@ -1293,17 +1370,17 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
                 bg="white", fg="#666").pack(anchor="w", pady=(0, 20))
 
         
-        # Services header
+
         services_header = tk.Frame(content_frame, bg="white")
         services_header.pack(fill="x", pady=(0, 10))
         tk.Label(services_header, text="SERVICES", font=("Arial", 10, "bold"), 
                 bg="white", fg=TEXT_COLOR).pack(anchor="w")
         
-        # Services list frame with border
+        
         services_frame = tk.Frame(content_frame, bg="white", bd=1, relief="solid")
         services_frame.pack(fill="x", pady=(0, 15))
         
-        # Add column headers
+        
         header_frame = tk.Frame(services_frame, bg="#F5F5F5")
         header_frame.pack(fill="x", pady=(1, 0), padx=1)
         
@@ -1314,7 +1391,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         tk.Label(header_frame, text="Amount", font=("Arial", 9, "bold"), 
                 bg="#F5F5F5", fg="#333").pack(side="right", padx=10, pady=8)
         
-        # Add services
+        
         for i, (service, qty, amount) in enumerate(services_list):
             service_frame = tk.Frame(services_frame, bg="white" if i % 2 == 0 else "#F9F9F9")
             service_frame.pack(fill="x", pady=(1, 0), padx=1)
@@ -1326,7 +1403,7 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
             tk.Label(service_frame, text=f"₱{amount:,.2f}", font=("Arial", 9), 
                     bg=service_frame['bg'], fg="#333").pack(side="right", padx=10, pady=8)
         
-        # Total amount
+        
         total_frame = tk.Frame(content_frame, bg="white")
         total_frame.pack(fill="x", pady=(10, 20))
         
@@ -1335,17 +1412,17 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
         tk.Label(total_frame, text=f"₱{total_amount:,.2f}", font=("Arial", 14, "bold"), 
                 bg="white", fg=ACCENT).pack(side="right", padx=10)
         
-        # Thank you message
+        
         tk.Label(content_frame, text="Thank you for choosing Nuvy Clinic!", 
                 font=("Arial", 10, "italic"), bg="white", fg="#666").pack(pady=(10, 5))
         tk.Label(content_frame, text="Please bring this receipt on your appointment day.", 
                 font=("Arial", 8), bg="white", fg="#888").pack(pady=(0, 20))
         
-        # Buttons frame
+        
         button_frame = tk.Frame(content_frame, bg="white")
         button_frame.pack(fill="x", pady=(10, 0))
         
-        # Print button
+        
         print_btn = tk.Button(button_frame, text="🖨️ Print Receipt", 
                              command=lambda: self.print_receipt(receipt_num, patient_name, 
                                                              appointment_date, services_list, total_amount),
@@ -1353,14 +1430,14 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
                              border=0, relief="flat", cursor="hand2", padx=20, pady=8)
         print_btn.pack(side="left", padx=5, pady=10)
         
-        # Close button
+    
         close_btn = tk.Button(button_frame, text="Close", 
                             command=receipt_window.destroy,
                             bg="#E0E0E0", fg="#333", font=("Arial", 10, "bold"),
                             border=0, relief="flat", cursor="hand2", padx=20, pady=8)
         close_btn.pack(side="right", padx=5, pady=10)
         
-        # Footer
+    
         footer_frame = tk.Frame(content_frame, bg="white")
         footer_frame.pack(fill="x", pady=(20, 0))
         
