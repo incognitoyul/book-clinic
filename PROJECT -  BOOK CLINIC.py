@@ -8,10 +8,10 @@ from datetime import datetime
 
 users = {}
 
-# Get the directory where the script is located
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Define file paths using absolute paths
+
 USERS_FILE = os.path.join(BASE_DIR, "booking_data", "users.txt")
 BOOKINGS_FILE = os.path.join(BASE_DIR, "booking_data", "bookings.txt")
 FORGOT_PASSWORD_FILE = os.path.join(BASE_DIR, "booking_data", "forgot_password.txt")
@@ -131,12 +131,25 @@ def save_booking(patient_name, appointment_date, services_list, total_amount):
         os.makedirs(os.path.dirname(BOOKINGS_FILE), exist_ok=True)
         print(f"Directory exists or created: {os.path.dirname(BOOKINGS_FILE)}")
         
+       
+        serializable_services = []
+        for service in services_list:
+            if isinstance(service, tuple) and len(service) >= 3:
+                service_dict = {
+                    'service_name': service[0],
+                    'quantity': service[1],
+                    'subtotal': service[2]
+                }
+                serializable_services.append(service_dict)
+            elif isinstance(service, dict):
+                serializable_services.append(service)
+        
         
         booking_data = {
             "booking_id": f"BK-{datetime.now().strftime('%Y%m%d%H%M%S')}",
             "patient_name": patient_name,
             "appointment_date": appointment_date,
-            "services": services_list,
+            "services": serializable_services,
             "total_amount": total_amount,
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": "confirmed"
@@ -184,15 +197,42 @@ def load_bookings_for_user(username):
     bookings = []
     if os.path.exists(BOOKINGS_FILE):
         try:
-            with open(BOOKINGS_FILE, 'r') as f:
-                for line in f:
+            with open(BOOKINGS_FILE, 'r', encoding='utf-8') as f:
+                for line_num, line in enumerate(f, 1):
                     line = line.strip()
-                    if line:
+                    if not line:
+                        continue
+                    
+                    try:
                         booking_data = json.loads(line)
-                        if booking_data['patient_name'] == username:
+                        
+                        if 'services' in booking_data and isinstance(booking_data['services'], list):
+                            services = []
+                            for service in booking_data['services']:
+                                if isinstance(service, dict):
+                                    services.append((
+                                        service.get('service_name', ''),
+                                        service.get('quantity', 0),
+                                        service.get('subtotal', 0)
+                                    ))
+                                else:
+                                    services.append(service)
+                            booking_data['services'] = services
+                        
+                        if booking_data.get('patient_name') == username:
                             bookings.append(booking_data)
+                            
+                    except json.JSONDecodeError as je:
+                        print(f"Error parsing JSON on line {line_num}: {je}")
+                        print(f"Problematic line: {line}")
+                    except Exception as e:
+                        print(f"Error processing booking on line {line_num}: {e}")
+                        
         except Exception as e:
-            print(f"Error loading bookings: {e}")
+            print(f"Error reading bookings file: {e}")
+            import traceback
+            traceback.print_exc()
+            
     return bookings
 
 
@@ -1169,61 +1209,200 @@ With an efficient appointment system and a welcoming environment, Nuvy Clinic ma
     def show_receipt(self, patient_name, appointment_date, services_list, total_amount):
         """Display a professional receipt page for the confirmed booking."""
         
-        save_booking(patient_name, appointment_date, services_list, total_amount)
+        # Save the booking first
+        if not save_booking(patient_name, appointment_date, services_list, total_amount):
+            messagebox.showerror("Error", "Failed to save booking. Please try again.")
+            return
         
         receipt_window = tk.Toplevel(self.root)
         receipt_window.title("Booking Receipt")
-        receipt_window.geometry("500x650")
+        receipt_window.geometry("500x700")
         receipt_window.configure(bg="white")
         receipt_window.resizable(False, False)
-
         
-        header_frame = tk.Frame(receipt_window, bg=ACCENT, height=80)
+        # Make the receipt window appear on top
+        receipt_window.transient(self.root)
+        receipt_window.grab_set()
+        
+        # Center the window on screen
+        receipt_window.update_idletasks()
+        width = receipt_window.winfo_width()
+        height = receipt_window.winfo_height()
+        x = (receipt_window.winfo_screenwidth() // 2) - (width // 2)
+        y = (receipt_window.winfo_screenheight() // 2) - (height // 2)
+        receipt_window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+        
+        # Bring window to front and focus it
+        receipt_window.lift()
+        receipt_window.focus_force()
+
+        # Create a scrollable frame for the receipt content
+        canvas = tk.Canvas(receipt_window, bg="white", highlightthickness=0)
+        scrollbar = ttk.Scrollbar(receipt_window, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg="white")
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack the canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Header
+        header_frame = tk.Frame(scrollable_frame, bg=ACCENT, height=80)
         header_frame.pack(fill="x")
-        tk.Label(header_frame, text="🏥 CLINIC BOOKING RECEIPT", font=("Arial", 16, "bold"), 
-                 bg=ACCENT, fg="white").pack(pady=15)
-
+        tk.Label(header_frame, text="🏥 CLINIC BOOKING RECEIPT", 
+                font=("Arial", 16, "bold"), 
+                bg=ACCENT, fg="white").pack(pady=15)
         
-        content_frame = tk.Frame(receipt_window, bg="white")
+        # Main content frame
+        content_frame = tk.Frame(scrollable_frame, bg="white")
         content_frame.pack(fill="both", expand=True, padx=20, pady=20)
-
         
+        # Receipt info
         receipt_num = f"RCP-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        tk.Label(content_frame, text=f"Receipt #: {receipt_num}", font=("Arial", 9), 
-                 bg="white", fg="#666").pack(anchor="w", pady=(0, 10))
-        tk.Label(content_frame, text=f"Issued: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", 
-                 font=("Arial", 9), bg="white", fg="#666").pack(anchor="w", pady=(0, 15))
+        tk.Label(content_frame, text="Nuvy Clinic", 
+                font=("Arial", 14, "bold"), 
+                bg="white", fg="#333").pack(anchor="center", pady=(0, 10))
+        
+        tk.Label(content_frame, text="123 Health Street, City, Country", 
+                font=("Arial", 9), bg="white", fg="#666").pack(anchor="center", pady=(0, 20))
+        
+        tk.Label(content_frame, text="─" * 50, 
+                bg="white", fg="#DDD").pack(anchor="center", pady=(0, 15))
+                
+        tk.Label(content_frame, text=f"Receipt #: {receipt_num}", 
+                font=("Arial", 9, "bold"), 
+                bg="white", fg="#333").pack(anchor="w", pady=(0, 5))
+                
+        tk.Label(content_frame, text=f"Date: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", 
+                font=("Arial", 9), 
+                bg="white", fg="#666").pack(anchor="w", pady=(0, 5))
+                
+        tk.Label(content_frame, text=f"Patient: {patient_name}", 
+                font=("Arial", 9), 
+                bg="white", fg="#666").pack(anchor="w", pady=(0, 5))
+                
+        tk.Label(content_frame, text=f"Appointment Date: {appointment_date}", 
+                font=("Arial", 9), 
+                bg="white", fg="#666").pack(anchor="w", pady=(0, 20))
 
         
-        tk.Label(content_frame, text="─" * 50, bg="white", fg="#DDD").pack(anchor="w", pady=(0, 10))
-
+        # Services header
+        services_header = tk.Frame(content_frame, bg="white")
+        services_header.pack(fill="x", pady=(0, 10))
+        tk.Label(services_header, text="SERVICES", font=("Arial", 10, "bold"), 
+                bg="white", fg=TEXT_COLOR).pack(anchor="w")
         
-        tk.Label(content_frame, text="PATIENT INFORMATION", font=("Arial", 10, "bold"), 
-                 bg="white", fg=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
-        tk.Label(content_frame, text=f"Name: {patient_name}", font=("Arial", 10), 
-                 bg="white", fg=TEXT_COLOR).pack(anchor="w")
-        tk.Label(content_frame, text=f"Appointment Date: {appointment_date}", font=("Arial", 10), 
-                 bg="white", fg=TEXT_COLOR).pack(anchor="w", pady=(0, 15))
-
+        # Services list frame with border
+        services_frame = tk.Frame(content_frame, bg="white", bd=1, relief="solid")
+        services_frame.pack(fill="x", pady=(0, 15))
         
+        # Add column headers
+        header_frame = tk.Frame(services_frame, bg="#F5F5F5")
+        header_frame.pack(fill="x", pady=(1, 0), padx=1)
+        
+        tk.Label(header_frame, text="Service", font=("Arial", 9, "bold"), 
+                bg="#F5F5F5", fg="#333").pack(side="left", padx=10, pady=8, anchor="w")
+        tk.Label(header_frame, text="Qty", font=("Arial", 9, "bold"), 
+                bg="#F5F5F5", fg="#333").pack(side="left", padx=10, pady=8)
+        tk.Label(header_frame, text="Amount", font=("Arial", 9, "bold"), 
+                bg="#F5F5F5", fg="#333").pack(side="right", padx=10, pady=8)
+        
+        # Add services
+        for i, (service, qty, amount) in enumerate(services_list):
+            service_frame = tk.Frame(services_frame, bg="white" if i % 2 == 0 else "#F9F9F9")
+            service_frame.pack(fill="x", pady=(1, 0), padx=1)
+            
+            tk.Label(service_frame, text=service, font=("Arial", 9), 
+                    bg=service_frame['bg'], fg="#333").pack(side="left", padx=10, pady=8, anchor="w")
+            tk.Label(service_frame, text=str(qty), font=("Arial", 9), 
+                    bg=service_frame['bg'], fg="#333").pack(side="left", padx=10, pady=8)
+            tk.Label(service_frame, text=f"₱{amount:,.2f}", font=("Arial", 9), 
+                    bg=service_frame['bg'], fg="#333").pack(side="right", padx=10, pady=8)
+        
+        # Total amount
+        total_frame = tk.Frame(content_frame, bg="white")
+        total_frame.pack(fill="x", pady=(10, 20))
+        
+        tk.Label(total_frame, text="TOTAL AMOUNT:", font=("Arial", 11, "bold"), 
+                bg="white", fg="#333").pack(side="left", padx=10)
+        tk.Label(total_frame, text=f"₱{total_amount:,.2f}", font=("Arial", 14, "bold"), 
+                bg="white", fg=ACCENT).pack(side="right", padx=10)
+        
+        # Thank you message
+        tk.Label(content_frame, text="Thank you for choosing Nuvy Clinic!", 
+                font=("Arial", 10, "italic"), bg="white", fg="#666").pack(pady=(10, 5))
+        tk.Label(content_frame, text="Please bring this receipt on your appointment day.", 
+                font=("Arial", 8), bg="white", fg="#888").pack(pady=(0, 20))
+        
+        # Buttons frame
+        button_frame = tk.Frame(content_frame, bg="white")
+        button_frame.pack(fill="x", pady=(10, 0))
+        
+        # Print button
+        print_btn = tk.Button(button_frame, text="🖨️ Print Receipt", 
+                             command=lambda: self.print_receipt(receipt_num, patient_name, 
+                                                             appointment_date, services_list, total_amount),
+                             bg=ACCENT, fg="white", font=("Arial", 10, "bold"),
+                             border=0, relief="flat", cursor="hand2", padx=20, pady=8)
+        print_btn.pack(side="left", padx=5, pady=10)
+        
+        # Close button
+        close_btn = tk.Button(button_frame, text="Close", 
+                            command=receipt_window.destroy,
+                            bg="#E0E0E0", fg="#333", font=("Arial", 10, "bold"),
+                            border=0, relief="flat", cursor="hand2", padx=20, pady=8)
+        close_btn.pack(side="right", padx=5, pady=10)
+        
+        # Footer
+        footer_frame = tk.Frame(content_frame, bg="white")
+        footer_frame.pack(fill="x", pady=(20, 0))
+        
+        tk.Label(footer_frame, text="Nuvy Clinic - Your Health, One Click Away", 
+                font=("Arial", 8), bg="white", fg="#999").pack(pady=(0, 5))
+        tk.Label(footer_frame, text="For any inquiries, please contact: contact@nuvyclinic.com | +1 234 567 8900", 
+                font=("Arial", 7), bg="white", fg="#999").pack(pady=(0, 10))
         tk.Label(content_frame, text="─" * 50, bg="white", fg="#DDD").pack(anchor="w", pady=(0, 10))
 
         
         tk.Label(content_frame, text="SERVICES BOOKED", font=("Arial", 10, "bold"), 
                  bg="white", fg=TEXT_COLOR).pack(anchor="w", pady=(0, 8))
 
-        for service_name, qty, subtotal in services_list:
+        
+        for service_item in services_list:
+            
+            if isinstance(service_item, dict):
+                service_name = service_item.get('service_name', 'Unknown Service')
+                qty = service_item.get('quantity', 1)
+                subtotal = service_item.get('subtotal', 0)
+            elif isinstance(service_item, (list, tuple)) and len(service_item) >= 3:
+                service_name, qty, subtotal = service_item[0], service_item[1], service_item[2]
+            else:
+                continue  
+                
             service_frame = tk.Frame(content_frame, bg="white")
             service_frame.pack(fill="x", pady=3)
-            tk.Label(service_frame, text=f"  {service_name}", font=("Arial", 9), 
+            
+            
+            info_frame = tk.Frame(service_frame, bg="white")
+            info_frame.pack(fill="x", padx=10, pady=2)
+            
+            tk.Label(info_frame, text=service_name, font=("Arial", 9), 
                      bg="white", fg=TEXT_COLOR).pack(side="left", anchor="w")
-            tk.Label(service_frame, text=f"x{qty}", font=("Arial", 9), 
-                     bg="white", fg=TEXT_COLOR).pack(side="right")
+            tk.Label(info_frame, text=f"x{qty}", font=("Arial", 9), 
+                     bg="white", fg="#666").pack(side="right")
 
-            price_frame = tk.Frame(content_frame, bg="white")
+            
+            price_frame = tk.Frame(service_frame, bg="white")
             price_frame.pack(fill="x", pady=(0, 8))
-            tk.Label(price_frame, text=f"    ₱{subtotal}", font=("Arial", 9, "bold"), 
-                     bg="white", fg=BUTTON_COLOR).pack(side="right")
+            tk.Label(price_frame, text=f"₱{float(subtotal):,.2f}", font=("Arial", 9, "bold"), 
+                     bg="white", fg=BUTTON_COLOR).pack(side="right", padx=10)
 
         
         tk.Label(content_frame, text="─" * 50, bg="white", fg="#DDD").pack(anchor="w", pady=(10, 10))
