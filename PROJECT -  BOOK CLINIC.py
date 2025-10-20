@@ -165,7 +165,7 @@ def load_cancellations_for_user(username):
 class ClinicBookingApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Clinic Booking System")
+        self.root.title("Nuvy Clinic — Your Health, One Click Away")
         
         self.root.state('zoomed')
         self.root.configure(bg=MAIN_BG)
@@ -195,7 +195,7 @@ class ClinicBookingApp:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-    def set_background_image(self, image_file="dental.jpeg"):
+    def set_background_image(self, image_file="dental clinic.jpg"):
         """Set background image for the page."""
         try:
             bg_img = Image.open(image_file)
@@ -253,8 +253,8 @@ class ClinicBookingApp:
                 bg="white", fg="#0B8FA3").pack(pady=(0, 20))
 
         
-        tk.Label(content_frame, text="Your Health, One Click Away", font=("Arial", 14), 
-                bg="white", fg="#666").pack(pady=(0, 30))
+        tk.Label(content_frame, text="Nuvy Clinic — Your Health, One Click Away", font=("Arial", 14), 
+                bg="white", fg="#0B8FA3").pack(pady=(0, 30))
 
         
         features = ["✓ Easy Appointment Booking", "✓ Multiple Services", "✓ Secure & Reliable", "✓ 24/7 Support"]
@@ -317,7 +317,7 @@ class ClinicBookingApp:
         footer_content = tk.Frame(footer_frame, bg="#0B8FA3")
         footer_content.pack(fill="both", expand=True, padx=20, pady=10)
         
-        tk.Label(footer_content, text="© 2025 Clinic Booking System. All rights reserved.", 
+        tk.Label(footer_content, text="© 2025 Nuvy Clinic. All rights reserved.", 
                 font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="left")
         tk.Label(footer_content, text="Developed by: Yul, Dwayne, James, Zaiver", 
                 font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="right")
@@ -353,9 +353,9 @@ class ClinicBookingApp:
         header_bar.pack(fill="x")
 
         
-        tk.Label(left_panel, text="Your Health, One Click Away", font=("Arial", 20, "bold"), 
+        tk.Label(left_panel, text="Nuvy Clinic", font=("Arial", 20, "bold"), 
                 bg="white", fg="#0B8FA3").pack(pady=(25, 5))
-        tk.Label(left_panel, text="Start managing your health today.", font=("Arial", 11), 
+        tk.Label(left_panel, text="Your Health, One Click Away", font=("Arial", 11), 
                 bg="white", fg="#999").pack(pady=(0, 25))
 
         
@@ -383,10 +383,17 @@ class ClinicBookingApp:
         options_frame.pack(padx=40, pady=(0, 20), fill="x")
         tk.Label(options_frame, text="Remember me", bg="white", font=("Arial", 10), 
                 fg="#333").pack(side="left")
-        forgot_link = tk.Label(options_frame, text="Forgot Password?", bg="white", font=("Arial", 10), 
-                fg="#0099CC", cursor="hand2")
-        forgot_link.pack(side="right")
-        forgot_link.bind("<Button-1>", lambda e: self.forgot_password())
+        forgot_btn = tk.Button(options_frame, text="Forgot Password?", command=self.forgot_password,
+                              bg="white", fg="#0B8FA3", font=("Arial", 11, "bold"),
+                              border=1, relief="solid", cursor="hand2", padx=10, pady=3)
+        forgot_btn.pack(side="right")
+        
+        def on_enter(e):
+            forgot_btn.config(bg="#0B8FA3", fg="white")
+        def on_leave(e):
+            forgot_btn.config(bg="white", fg="#0B8FA3")
+        forgot_btn.bind("<Enter>", on_enter)
+        forgot_btn.bind("<Leave>", on_leave)
 
         
         login_btn = tk.Button(left_panel, text="Login", command=self.login, 
@@ -403,10 +410,21 @@ class ClinicBookingApp:
         login_btn.bind("<Leave>", on_leave)
 
         
-        create_link = tk.Label(left_panel, text="Create Account", bg="white", font=("Arial", 11), 
-                              fg="#333", cursor="hand2")
-        create_link.pack(pady=20)
+        links_frame = tk.Frame(left_panel, bg="white")
+        links_frame.pack(pady=15)
+        
+        create_link = tk.Label(links_frame, text="Create Account", bg="white", font=("Arial", 11), 
+                              fg="#0B8FA3", cursor="hand2")
+        create_link.pack(side="left", padx=10)
         create_link.bind("<Button-1>", lambda e: self.create_register_page())
+        
+        separator_dot = tk.Label(links_frame, text="•", bg="white", font=("Arial", 11), fg="#CCC")
+        separator_dot.pack(side="left", padx=5)
+        
+        about_link = tk.Label(links_frame, text="About", bg="white", font=("Arial", 11), 
+                             fg="#0B8FA3", cursor="hand2")
+        about_link.pack(side="left", padx=10)
+        about_link.bind("<Button-1>", lambda e: self.show_about())
 
         
         divider = tk.Frame(container, bg="#E0E0E0", width=2)
@@ -423,7 +441,7 @@ class ClinicBookingApp:
             
             img_width, img_height = anime_img.size
             max_width = int(container_width * 0.55)
-            max_height = int(container_height * 0.85)
+            max_height = int(container_height * 0.98)
             
             
             if img_width > 0 and img_height > 0:
@@ -435,7 +453,7 @@ class ClinicBookingApp:
             
             self.anime_photo = ImageTk.PhotoImage(anime_img)
             anime_label = tk.Label(right_panel, image=self.anime_photo, bg="#B8E6F0")
-            anime_label.pack(expand=True, padx=20, pady=20)
+            anime_label.pack(expand=True, padx=10, pady=10)
         except Exception as e:
             print(f"Error loading image: {e}")
             tk.Label(right_panel, text="🏥\nMain Login\nPicture", font=("Arial", 16, "bold"), 
@@ -448,30 +466,122 @@ class ClinicBookingApp:
         footer_content = tk.Frame(footer_frame, bg="#0B8FA3")
         footer_content.pack(fill="both", expand=True, padx=20, pady=10)
         
-        tk.Label(footer_content, text="© 2025 Clinic Booking System. All rights reserved.", 
+        tk.Label(footer_content, text="© 2025 Nuvy Clinic. All rights reserved.", 
                 font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="left")
         tk.Label(footer_content, text="Developed by: Yul, Dwayne, James, Zaiver", 
                 font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="right")
 
     def create_register_page(self):
         self.clear_window()
-        self.root.configure(bg=MAIN_BG)
-        self.set_background_image()
+        self.root.configure(bg="#E8E8E8")
 
-        center_frame = tk.Frame(self.root, bg="white", padx=20, pady=20, relief="raised", bd=2)
-        center_frame.place(relx=0.5, rely=0.5, anchor="center")
+        window_width = self.root.winfo_width()
+        window_height = self.root.winfo_height()
+        
+        if window_width <= 1:
+            window_width = 1600
+        if window_height <= 1:
+            window_height = 900
+        
+        container_width = int(window_width * 0.95)
+        container_height = int(window_height * 0.95)
 
-        tk.Label(center_frame, text="Create Account", font=self.header_font, bg="white", fg=TEXT_COLOR).pack(pady=10)
-        tk.Label(center_frame, text="Username", bg="white", font=self.font_regular).pack(anchor="w", pady=2)
-        self.reg_username = ttk.Entry(center_frame, width=30)
-        self.reg_username.pack(pady=2)
+        container = tk.Frame(self.root, bg="white", relief="flat", bd=0)
+        container.place(relx=0.5, rely=0.5, anchor="center", width=container_width, height=container_height)
 
-        tk.Label(center_frame, text="Password", bg="white", font=self.font_regular).pack(anchor="w", pady=2)
-        self.reg_password = ttk.Entry(center_frame, show="*", width=30)
-        self.reg_password.pack(pady=2)
+        left_panel = tk.Frame(container, bg="white")
+        left_panel.pack(side="left", fill="both", expand=True)
 
-        ttk.Button(center_frame, text="Register", command=self.register).pack(pady=10)
-        ttk.Button(center_frame, text="Back to Login", command=self.create_login_page).pack()
+        header_bar = tk.Frame(left_panel, bg="#0B8FA3", height=50)
+        header_bar.pack(fill="x")
+
+        tk.Label(left_panel, text="Nuvy Clinic", font=("Arial", 20, "bold"), 
+                bg="white", fg="#0B8FA3").pack(pady=(25, 5))
+        tk.Label(left_panel, text="Your Health, One Click Away", font=("Arial", 11), 
+                bg="white", fg="#999").pack(pady=(0, 25))
+
+        tk.Label(left_panel, text="Create Account", bg="white", font=("Arial", 16, "bold"), 
+                fg="#0B8FA3").pack(anchor="w", padx=40, pady=(10, 20))
+
+        tk.Label(left_panel, text="Username", bg="white", font=("Arial", 11), 
+                fg="#333").pack(anchor="w", padx=40, pady=(10, 3))
+        username_frame = tk.Frame(left_panel, bg="white", highlightbackground="#E0E0E0", 
+                               highlightthickness=1, relief="flat")
+        username_frame.pack(padx=40, pady=(0, 15), fill="x")
+        self.reg_username = tk.Entry(username_frame, width=35, font=("Arial", 12), 
+                                       border=0, bg="white")
+        self.reg_username.pack(padx=12, pady=10)
+
+        tk.Label(left_panel, text="Password", bg="white", font=("Arial", 11), 
+                fg="#333").pack(anchor="w", padx=40, pady=(10, 3))
+        password_frame = tk.Frame(left_panel, bg="white", highlightbackground="#E0E0E0", 
+                                 highlightthickness=1, relief="flat")
+        password_frame.pack(padx=40, pady=(0, 15), fill="x")
+        self.reg_password = tk.Entry(password_frame, show="•", width=35, font=("Arial", 12), 
+                                       border=0, bg="white")
+        self.reg_password.pack(padx=12, pady=10)
+
+        register_btn = tk.Button(left_panel, text="Register", command=self.register, 
+                             bg="#0B8FA3", fg="white", font=("Arial", 13, "bold"), 
+                             border=0, relief="flat", cursor="hand2", padx=20, pady=12)
+        register_btn.pack(pady=15, padx=40, fill="x")
+        
+        def on_enter(e):
+            register_btn.config(bg="#087A8F")
+        def on_leave(e):
+            register_btn.config(bg="#0B8FA3")
+        register_btn.bind("<Enter>", on_enter)
+        register_btn.bind("<Leave>", on_leave)
+
+        back_link = tk.Label(left_panel, text="Back to Login", bg="white", font=("Arial", 11, "bold"), 
+                fg="#0B8FA3", cursor="hand2")
+        back_link.pack(pady=20)
+        back_link.bind("<Button-1>", lambda e: self.create_login_page())
+        
+        def on_enter(e):
+            back_link.config(fg="#087A8F", font=("Arial", 11, "bold", "underline"))
+        def on_leave(e):
+            back_link.config(fg="#0B8FA3", font=("Arial", 11, "bold"))
+        back_link.bind("<Enter>", on_enter)
+        back_link.bind("<Leave>", on_leave)
+
+        divider = tk.Frame(container, bg="#E0E0E0", width=2)
+        divider.pack(side="left", fill="y")
+
+        right_panel = tk.Frame(container, bg="#B8E6F0")
+        right_panel.pack(side="right", fill="both", expand=True)
+
+        try:
+            anime_img = Image.open("MAIN LOG IN PICTURE.png")
+            
+            img_width, img_height = anime_img.size
+            max_width = int(container_width * 0.55)
+            max_height = int(container_height * 0.98)
+            
+            if img_width > 0 and img_height > 0:
+                scale = min(max_width / img_width, max_height / img_height)
+                new_width = int(img_width * scale)
+                new_height = int(img_height * scale)
+                anime_img = anime_img.resize((new_width, new_height), Image.LANCZOS)
+            
+            self.anime_photo = ImageTk.PhotoImage(anime_img)
+            anime_label = tk.Label(right_panel, image=self.anime_photo, bg="#B8E6F0")
+            anime_label.pack(expand=True, fill="both", padx=10, pady=10)
+        except Exception as e:
+            print(f"Error loading image: {e}")
+            tk.Label(right_panel, text="🏥\nMain Login\nPicture", font=("Arial", 16, "bold"), 
+                    bg="#B8E6F0", fg="#0B8FA3", justify="center").pack(expand=True)
+
+        footer_frame = tk.Frame(self.root, bg="#0B8FA3", height=40)
+        footer_frame.pack(side="bottom", fill="x")
+        
+        footer_content = tk.Frame(footer_frame, bg="#0B8FA3")
+        footer_content.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        tk.Label(footer_content, text="© 2025 Nuvy Clinic. All rights reserved.", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="left")
+        tk.Label(footer_content, text="Developed by: Yul, Dwayne, James, Zaiver", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="right")
 
     def login(self):
         username = self.login_username.get().strip()
@@ -483,13 +593,93 @@ class ClinicBookingApp:
             self.current_user = username
             self.create_main_interface()
         else:
-            messagebox.showerror("Error", "Invalid username or password")
+            
+            error_window = tk.Toplevel(self.root)
+            error_window.title("Error")
+            error_window.geometry("320x140")
+            error_window.configure(bg="white")
+            error_window.resizable(False, False)
+            
+            
+            main_frame = tk.Frame(error_window, bg="white")
+            main_frame.pack(fill="both", expand=True, padx=15, pady=15)
+            
+            
+            content_frame = tk.Frame(main_frame, bg="white")
+            content_frame.pack(fill="both", expand=True)
+            
+            
+            icon_frame = tk.Frame(content_frame, bg="white")
+            icon_frame.pack(side="left", padx=(0, 10), fill="none")
+            
+            try:
+                error_img = Image.open("error picture.png")
+                error_img = error_img.resize((50, 50), Image.LANCZOS)
+                self.error_photo = ImageTk.PhotoImage(error_img)
+                img_label = tk.Label(icon_frame, image=self.error_photo, bg="white")
+                img_label.pack()
+            except Exception:
+                
+                tk.Label(icon_frame, text="❌", font=("Arial", 32), bg="white").pack()
+            
+            
+            text_frame = tk.Frame(content_frame, bg="white")
+            text_frame.pack(side="left", fill="both", expand=True)
+            
+            tk.Label(text_frame, text="Invalid username or password", font=("Arial", 11, "bold"), 
+                    bg="white", fg="#D32F2F", justify="left").pack(anchor="w", pady=(0, 5))
+            tk.Label(text_frame, text="Please check your credentials.", font=("Arial", 9), 
+                    bg="white", fg="#666", justify="left").pack(anchor="w")
+            
+            
+            button_frame = tk.Frame(error_window, bg="white")
+            button_frame.pack(fill="x", padx=15, pady=(0, 10))
+            tk.Button(button_frame, text="OK", command=error_window.destroy, 
+                     bg="#0B8FA3", fg="white", font=("Arial", 10), border=0, 
+                     relief="flat", cursor="hand2", padx=20, pady=5).pack()
+
+    def show_about(self):
+        """Display About information window."""
+        about_window = tk.Toplevel(self.root)
+        about_window.title("About Our Clinic")
+        about_window.geometry("700x600")
+        about_window.configure(bg="#E8E8E8")
+        about_window.resizable(False, False)
+
+        header_frame = tk.Frame(about_window, bg="#0B8FA3", height=70)
+        header_frame.pack(fill="x")
+        
+        tk.Label(header_frame, text="ℹ️ What is Nuvy?", font=("Arial", 18, "bold"), 
+                 bg="#0B8FA3", fg="white").pack(pady=15)
+
+        content_frame = tk.Frame(about_window, bg="white")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        about_text = """What is Nuvy?
+Nuvy stands for "New Version of Me." It represents transformation, healing, and growth — a commitment to helping every patient become their healthiest and best self. Nuvy is more than just a name; it's a vision of progress and renewal through modern healthcare and compassionate service.
+
+At Nuvy Clinic, we are dedicated to redefining healthcare by combining innovation, professionalism, and empathy. Our goal is to provide exceptional medical care that prioritizes your comfort, convenience, and total well-being.
+
+We offer a variety of specialized services tailored to your health needs — from Dental Cleaning that keeps your smile bright and confident, to Physical Therapy that restores strength and mobility, and Eye Check-ups that preserve your vision and clarity. Each service is performed by skilled professionals who uphold the highest standards of care.
+
+With an efficient appointment system and a welcoming environment, Nuvy Clinic makes healthcare simple, accessible, and centered on you. Because at Nuvy, we believe that every visit brings you one step closer to becoming the new version of yourself."""
+
+        text_widget = tk.Text(content_frame, bg="white", fg="#333", font=("Arial", 10), 
+                             wrap="word", relief="solid", bd=1, padx=15, pady=15)
+        text_widget.pack(fill="both", expand=True, pady=(0, 15))
+        text_widget.insert("1.0", about_text)
+        text_widget.config(state="disabled")
+
+        close_btn = tk.Button(about_window, text="Close", command=about_window.destroy,
+                             bg="#0B8FA3", fg="white", font=("Arial", 11, "bold"),
+                             border=0, relief="flat", cursor="hand2", padx=30, pady=10)
+        close_btn.pack(pady=15)
 
     def forgot_password(self):
         """Handle forgot password functionality."""
         forgot_window = tk.Toplevel(self.root)
         forgot_window.title("Forgot Password")
-        forgot_window.geometry("400x250")
+        forgot_window.geometry("400x320")
         forgot_window.configure(bg="white")
         forgot_window.resizable(False, False)
 
@@ -514,7 +704,7 @@ class ClinicBookingApp:
 
         
         button_frame = tk.Frame(content_frame, bg="white")
-        button_frame.pack(fill="x", pady=10)
+        button_frame.pack(fill="x", pady=15)
 
         def reset_password():
             username = username_entry.get().strip()
@@ -583,10 +773,10 @@ class ClinicBookingApp:
 
         tk.Button(button_frame, text="Reset Password", command=reset_password, 
                  bg="#0B8FA3", fg="white", font=("Arial", 11, "bold"), 
-                 border=0, relief="flat", cursor="hand2", padx=20, pady=8).pack(side="left", padx=5)
+                 border=0, relief="flat", cursor="hand2", padx=25, pady=10).pack(side="left", padx=5)
         tk.Button(button_frame, text="Cancel", command=forgot_window.destroy, 
-                 bg="#999", fg="white", font=("Arial", 11, "bold"), 
-                 border=0, relief="flat", cursor="hand2", padx=20, pady=8).pack(side="left", padx=5)
+                 bg="#D32F2F", fg="white", font=("Arial", 11, "bold"), 
+                 border=0, relief="flat", cursor="hand2", padx=25, pady=10).pack(side="left", padx=5)
 
     def register(self):
         username = self.reg_username.get().strip()
@@ -606,28 +796,43 @@ class ClinicBookingApp:
 
     def create_main_interface(self):
         self.clear_window()
-        self.root.configure(bg=MAIN_BG)
-        self.set_background_image()
+        self.root.configure(bg="#E8E8E8")
 
-        header = tk.Frame(self.root, bg=ACCENT, height=90)
+        header = tk.Frame(self.root, bg="#0B8FA3", height=70)
         header.pack(fill="x")
-        tk.Label(header, text=f"🏥 Clinic Booking — Welcome, {self.current_user}",
-                 font=self.header_font, bg=ACCENT, fg="white").pack(side="left", padx=20, pady=15)
+        
+        header_left = tk.Frame(header, bg="#0B8FA3")
+        header_left.pack(side="left", padx=20, pady=15)
+        tk.Label(header_left, text=f"🏥 Nuvy Clinic", font=("Arial", 18, "bold"),
+                 bg="#0B8FA3", fg="white").pack(side="left")
+        tk.Label(header_left, text=f"Welcome, {self.current_user}!", font=("Arial", 12),
+                 bg="#0B8FA3", fg="white").pack(side="left", padx=(15, 0))
 
-        date_frame = tk.Frame(header, bg=ACCENT)
-        date_frame.pack(side="right", padx=20)
-        tk.Label(date_frame, text="Pick appointment date:", bg=ACCENT, fg="white", font=self.font_regular).pack(side="left", padx=(0, 5))
-        date_entry = DateEntry(date_frame, textvariable=self.selected_date, width=12, background="darkblue",
+        date_frame = tk.Frame(header, bg="#0B8FA3")
+        date_frame.pack(side="right", padx=20, pady=15)
+        tk.Label(date_frame, text="Pick appointment date:", bg="#0B8FA3", fg="white", font=("Arial", 10)).pack(side="left", padx=(0, 10))
+        date_entry = DateEntry(date_frame, textvariable=self.selected_date, width=12, background="#0B8FA3",
                                foreground="white", borderwidth=2)
         date_entry.pack(side="left")
 
         self.cart = {}
-        products_frame = tk.Frame(self.root, bg=MAIN_BG)
-        products_frame.pack(pady=30)
+        
+        main_frame = tk.Frame(self.root, bg="white", relief="flat", bd=0)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        title_frame = tk.Frame(main_frame, bg="white")
+        title_frame.pack(fill="x", pady=(0, 20))
+        tk.Label(title_frame, text="Select Services", font=("Arial", 16, "bold"),
+                 bg="white", fg="#0B8FA3").pack(anchor="w")
+        tk.Label(title_frame, text="Choose the services you need for your appointment", font=("Arial", 10),
+                 bg="white", fg="#666").pack(anchor="w", pady=(5, 0))
+        
+        products_frame = tk.Frame(main_frame, bg="white")
+        products_frame.pack(fill="both", expand=True)
 
         image_files = {
-            "Dental Cleaning": "dental.jpeg",
-            "Physical Therapy": "physical therapy.jpeg",
+            "Dental Cleaning": "dental clinic.jpg",
+            "Physical Therapy": "physical theraphy 1.jpg",
             "Eye Check-up": "eye.jpg"
         }
 
@@ -635,25 +840,65 @@ class ClinicBookingApp:
         row = 0
         col = 0
         for product, price in services.items():
-            card = tk.Frame(products_frame, bg=CARD_BG, bd=1, relief="solid", padx=20, pady=10)
-            card.grid(row=row, column=col, padx=20, pady=20, ipadx=10, ipady=10)
+            card = tk.Frame(products_frame, bg="white", bd=2, relief="solid", highlightbackground="#0B8FA3", highlightthickness=2)
+            card.grid(row=row, column=col, padx=12, pady=12, sticky="nsew")
+            
+            img_frame = tk.Frame(card, bg="#B8E6F0", height=160, width=180)
+            img_frame.pack(fill="x", padx=0, pady=0)
+            img_frame.pack_propagate(False)
+            
             try:
                 img = Image.open(image_files[product])
-                img = img.resize((150, 150), Image.LANCZOS)
+                img = img.resize((180, 160), Image.LANCZOS)
                 photo = ImageTk.PhotoImage(img)
                 self.product_images[product] = photo
-                tk.Label(card, image=photo, bg=CARD_BG).pack(pady=5)
+                tk.Label(img_frame, image=photo, bg="#B8E6F0").pack(expand=True)
             except Exception:
-                tk.Label(card, text="[Image Missing]", bg=CARD_BG, relief="sunken", width=20, height=8).pack(pady=5)
+                tk.Label(img_frame, text="🏥", font=("Arial", 40), bg="#B8E6F0", fg="#0B8FA3").pack(expand=True)
 
-            tk.Label(card, text=f"{product}", font=self.font_bold, bg=CARD_BG, fg=TEXT_COLOR).pack()
-            tk.Label(card, text=f"₱{price}", font=self.font_regular, bg=CARD_BG, fg="#6B6B6B").pack(pady=(0, 5))
+            content_frame = tk.Frame(card, bg="white")
+            content_frame.pack(fill="both", expand=True, padx=12, pady=12)
+            
+            tk.Label(content_frame, text=f"{product}", font=("Arial", 12, "bold"), bg="white", fg="#0B8FA3").pack(anchor="w", pady=(0, 3))
+            tk.Label(content_frame, text=f"₱{price}", font=("Arial", 13, "bold"), bg="white", fg="#D32F2F").pack(anchor="w", pady=(0, 10))
 
             qty_var = tk.IntVar(value=0)
-            qty_frame = tk.Frame(card, bg=CARD_BG)
-            qty_frame.pack(pady=5)
-            tk.Label(qty_frame, text="Select:", bg=CARD_BG, fg=TEXT_COLOR).pack(side=tk.LEFT)
-            tk.Spinbox(qty_frame, from_=0, to=10, width=5, textvariable=qty_var).pack(side=tk.LEFT, padx=5)
+            qty_frame = tk.Frame(content_frame, bg="white")
+            qty_frame.pack(fill="x", pady=(0, 10))
+            
+            tk.Label(qty_frame, text="Quantity:", bg="white", fg="#333", font=("Arial", 10)).pack(side="left")
+            
+            qty_control_frame = tk.Frame(qty_frame, bg="white")
+            qty_control_frame.pack(side="left", padx=(10, 0))
+            
+            def make_decrease_qty(var):
+                def decrease_qty():
+                    current = var.get()
+                    if current > 0:
+                        var.set(current - 1)
+                return decrease_qty
+            
+            def make_increase_qty(var):
+                def increase_qty():
+                    current = var.get()
+                    if current < 10:
+                        var.set(current + 1)
+                return increase_qty
+            
+            decrease_btn = tk.Button(qty_control_frame, text="−", command=make_decrease_qty(qty_var),
+                                    bg="#E0E0E0", fg="#333", font=("Arial", 12, "bold"),
+                                    width=3, border=0, relief="solid", bd=1, cursor="hand2")
+            decrease_btn.pack(side="left", padx=2)
+            
+            qty_display = tk.Label(qty_control_frame, textvariable=qty_var, bg="white", fg="#0B8FA3",
+                                  font=("Arial", 11, "bold"), width=3)
+            qty_display.pack(side="left", padx=5)
+            
+            increase_btn = tk.Button(qty_control_frame, text="+", command=make_increase_qty(qty_var),
+                                    bg="#0B8FA3", fg="white", font=("Arial", 12, "bold"),
+                                    width=3, border=0, relief="solid", bd=1, cursor="hand2")
+            increase_btn.pack(side="left", padx=2)
+            
             self.cart[product] = qty_var
 
             col += 1
@@ -661,23 +906,67 @@ class ClinicBookingApp:
                 col = 0
                 row += 1
     
-        buttons_frame = tk.Frame(self.root, bg=MAIN_BG)
-        buttons_frame.pack(pady=20)
-        ttk.Button(buttons_frame, text="Appointment Summary", command=self.checkout).pack(side=tk.LEFT, padx=10)
-        ttk.Button(buttons_frame, text="View My Bookings", command=self.view_bookings).pack(side=tk.LEFT, padx=10)
-        ttk.Button(buttons_frame, text="Logout", command=self.logout).pack(side=tk.LEFT)
+        buttons_frame = tk.Frame(self.root, bg="#E8E8E8")
+        buttons_frame.pack(pady=20, fill="x", padx=20)
+        
+        summary_btn = tk.Button(buttons_frame, text="Book Now", command=self.checkout,
+                               bg="#0B8FA3", fg="white", font=("Arial", 11, "bold"),
+                               border=0, relief="flat", cursor="hand2", padx=20, pady=10)
+        summary_btn.pack(side=tk.LEFT, padx=5)
+        
+        bookings_btn = tk.Button(buttons_frame, text="View My Bookings", command=self.view_bookings,
+                                bg="#0B8FA3", fg="white", font=("Arial", 11, "bold"),
+                                border=0, relief="flat", cursor="hand2", padx=20, pady=10)
+        bookings_btn.pack(side=tk.LEFT, padx=5)
+        
+        logout_btn = tk.Button(buttons_frame, text="Logout", command=self.logout,
+                              bg="#D32F2F", fg="white", font=("Arial", 11, "bold"),
+                              border=0, relief="flat", cursor="hand2", padx=20, pady=10)
+        logout_btn.pack(side=tk.LEFT, padx=5)
+        
+        footer_frame = tk.Frame(self.root, bg="#0B8FA3", height=40)
+        footer_frame.pack(side="bottom", fill="x")
+        
+        footer_content = tk.Frame(footer_frame, bg="#0B8FA3")
+        footer_content.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        tk.Label(footer_content, text="© 2025 Nuvy Clinic. All rights reserved.", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="left")
+        tk.Label(footer_content, text="Developed by: Yul, Dwayne, James, Zaiver", 
+                font=("Arial", 9), bg="#0B8FA3", fg="white").pack(side="right")
 
     def checkout(self):
         total = 0
         selected_services = []
+        
+        print("\n" + "="*60)
+        print("CHECKOUT DEBUG INFO")
+        print("="*60)
+        print(f"Cart dictionary: {self.cart}")
+        print(f"Cart keys: {list(self.cart.keys())}")
+        print(f"Services dictionary: {services}")
+        print(f"Services keys: {list(services.keys())}")
+        
         for product, qty_var in self.cart.items():
             qty = qty_var.get()
+            print(f"\nProduct: '{product}' | Type: {type(product)}")
+            print(f"Quantity Variable: {qty_var} | Value: {qty}")
             if qty > 0:
-                price = services[product]
-                subtotal = price * qty
-                total += subtotal
-                selected_services.append((product, qty, subtotal))
+                try:
+                    price = services[product]
+                    subtotal = price * qty
+                    total += subtotal
+                    selected_services.append((product, qty, subtotal))
+                    print(f"✓ ADDED: {product} x{qty} = ₱{subtotal}")
+                except KeyError as e:
+                    print(f"✗ ERROR: Product '{product}' not found in services: {e}")
+            else:
+                print(f"- SKIPPED: Quantity is 0")
 
+        print(f"\nTotal selected services: {len(selected_services)}")
+        print(f"Total amount: ₱{total}")
+        print("="*60 + "\n")
+        
         if total == 0:
             messagebox.showinfo("No Selection", "Please select at least one service to book.")
             return
@@ -689,30 +978,92 @@ class ClinicBookingApp:
 
         summary_window = tk.Toplevel(self.root)
         summary_window.title("Appointment Summary")
-        summary_window.geometry("360x420")
-        summary_window.configure(bg="white")
+        summary_window.geometry("500x550")
+        summary_window.configure(bg="#E8E8E8")
+        summary_window.resizable(False, False)
 
-        tk.Label(summary_window, text="🧾 Appointment Summary", font=self.header_font, bg="white").pack(pady=10)
-        tk.Label(summary_window, text=f"Patient: {self.current_user}", bg="white", font=self.font_regular).pack(pady=(0, 5))
-        tk.Label(summary_window, text=f"Date: {chosen_date}", bg="white", font=self.font_regular).pack(pady=(0, 10))
+        header_frame = tk.Frame(summary_window, bg="#0B8FA3", height=70)
+        header_frame.pack(fill="x")
+        
+        tk.Label(header_frame, text="🧾 Appointment Summary", font=("Arial", 18, "bold"), 
+                 bg="#0B8FA3", fg="white").pack(pady=15)
 
-        for prod, qty, subtotal in selected_services:
-            tk.Label(summary_window, text=f"{prod} x{qty} = ₱{subtotal}", bg="white", font=self.font_regular).pack(anchor="w", padx=20)
+        content_frame = tk.Frame(summary_window, bg="white")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        tk.Label(summary_window, text=f"\nTotal: ₱{total}", font=self.font_bold, bg="white").pack(pady=10)
+        info_frame = tk.Frame(content_frame, bg="#F5F5F5", relief="solid", bd=1)
+        info_frame.pack(fill="x", pady=(0, 20))
+        
+        tk.Label(info_frame, text=f"👤 Patient: {self.current_user}", bg="#F5F5F5", fg="#333", 
+                 font=("Arial", 11)).pack(anchor="w", padx=15, pady=10)
+        tk.Label(info_frame, text=f"📅 Appointment Date: {chosen_date}", bg="#F5F5F5", fg="#333", 
+                 font=("Arial", 11)).pack(anchor="w", padx=15, pady=(0, 10))
+
+        services_label = tk.Label(content_frame, text="Services Booked:", bg="white", fg="#0B8FA3", 
+                                 font=("Arial", 12, "bold"))
+        services_label.pack(anchor="w", pady=(0, 10))
+
+        services_frame = tk.Frame(content_frame, bg="#F9F9F9", relief="solid", bd=1)
+        services_frame.pack(fill="both", expand=True, pady=(0, 20))
+
+        print(f"DEBUG: selected_services = {selected_services}")
+        print(f"DEBUG: total = {total}")
+        
+        if selected_services and len(selected_services) > 0:
+            for prod, qty, subtotal in selected_services:
+                service_row = tk.Frame(services_frame, bg="#F9F9F9")
+                service_row.pack(fill="x", padx=15, pady=12, border=0)
+                
+                tk.Label(service_row, text=f"✓ {prod}", bg="#F9F9F9", fg="#333", 
+                        font=("Arial", 11)).pack(side="left", anchor="w", expand=True)
+                tk.Label(service_row, text=f"× {qty}", bg="#F9F9F9", fg="#666", 
+                        font=("Arial", 10)).pack(side="left", padx=(10, 0))
+                tk.Label(service_row, text=f"₱{subtotal}", bg="#F9F9F9", fg="#D32F2F", 
+                        font=("Arial", 11, "bold")).pack(side="right", padx=(10, 0))
+        else:
+            empty_label = tk.Label(services_frame, text="No services selected", bg="#F9F9F9", fg="#999", 
+                    font=("Arial", 11))
+            empty_label.pack(pady=40)
+
+        separator = tk.Frame(content_frame, bg="#E0E0E0", height=2)
+        separator.pack(fill="x", pady=15)
+
+        total_frame = tk.Frame(content_frame, bg="white")
+        total_frame.pack(fill="x", pady=(0, 20))
+        
+        tk.Label(total_frame, text="Total Amount:", bg="white", fg="#333", 
+                font=("Arial", 12, "bold")).pack(side="left")
+        tk.Label(total_frame, text=f"₱{total}", bg="white", fg="#D32F2F", 
+                font=("Arial", 14, "bold")).pack(side="right")
+
+        button_frame = tk.Frame(content_frame, bg="white")
+        button_frame.pack(fill="x", pady=(10, 0))
 
         def confirm_and_close():
+            # Save the booking to the file
+            save_booking(self.current_user, chosen_date, selected_services, total)
+            # Show receipt
             self.show_receipt(self.current_user, chosen_date, selected_services, total)
+            # Reset the cart
             for v in self.cart.values():
                 v.set(0)
             summary_window.destroy()
+            # Show success message
+            messagebox.showinfo("Success", "Your appointment has been booked successfully!\n\nYou can view your bookings by clicking 'View My Bookings'.")
 
-        ttk.Button(summary_window, text="Confirm Booking", command=confirm_and_close).pack(pady=8)
-        ttk.Button(summary_window, text="Close", command=summary_window.destroy).pack()
+        confirm_btn = tk.Button(button_frame, text="✓ Confirm Booking", command=confirm_and_close,
+                               bg="#0B8FA3", fg="white", font=("Arial", 12, "bold"),
+                               border=0, relief="flat", cursor="hand2", padx=20, pady=12)
+        confirm_btn.pack(fill="x", pady=(0, 10))
+        
+        close_btn = tk.Button(button_frame, text="Close", command=summary_window.destroy,
+                             bg="#E0E0E0", fg="#333", font=("Arial", 11, "bold"),
+                             border=0, relief="flat", cursor="hand2", padx=20, pady=10)
+        close_btn.pack(fill="x")
 
     def show_receipt(self, patient_name, appointment_date, services_list, total_amount):
         """Display a professional receipt page for the confirmed booking."""
-        # Save booking to file
+        
         save_booking(patient_name, appointment_date, services_list, total_amount)
         
         receipt_window = tk.Toplevel(self.root)
@@ -721,27 +1072,27 @@ class ClinicBookingApp:
         receipt_window.configure(bg="white")
         receipt_window.resizable(False, False)
 
-        # Header
+        
         header_frame = tk.Frame(receipt_window, bg=ACCENT, height=80)
         header_frame.pack(fill="x")
         tk.Label(header_frame, text="🏥 CLINIC BOOKING RECEIPT", font=("Arial", 16, "bold"), 
                  bg=ACCENT, fg="white").pack(pady=15)
 
-        # Main content frame
+        
         content_frame = tk.Frame(receipt_window, bg="white")
         content_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # Receipt number and date
+        
         receipt_num = f"RCP-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         tk.Label(content_frame, text=f"Receipt #: {receipt_num}", font=("Arial", 9), 
                  bg="white", fg="#666").pack(anchor="w", pady=(0, 10))
         tk.Label(content_frame, text=f"Issued: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", 
                  font=("Arial", 9), bg="white", fg="#666").pack(anchor="w", pady=(0, 15))
 
-        # Separator
+        
         tk.Label(content_frame, text="─" * 50, bg="white", fg="#DDD").pack(anchor="w", pady=(0, 10))
 
-        # Patient details
+        
         tk.Label(content_frame, text="PATIENT INFORMATION", font=("Arial", 10, "bold"), 
                  bg="white", fg=TEXT_COLOR).pack(anchor="w", pady=(0, 5))
         tk.Label(content_frame, text=f"Name: {patient_name}", font=("Arial", 10), 
@@ -749,10 +1100,10 @@ class ClinicBookingApp:
         tk.Label(content_frame, text=f"Appointment Date: {appointment_date}", font=("Arial", 10), 
                  bg="white", fg=TEXT_COLOR).pack(anchor="w", pady=(0, 15))
 
-        # Separator
+        
         tk.Label(content_frame, text="─" * 50, bg="white", fg="#DDD").pack(anchor="w", pady=(0, 10))
 
-        # Services
+        
         tk.Label(content_frame, text="SERVICES BOOKED", font=("Arial", 10, "bold"), 
                  bg="white", fg=TEXT_COLOR).pack(anchor="w", pady=(0, 8))
 
@@ -769,10 +1120,10 @@ class ClinicBookingApp:
             tk.Label(price_frame, text=f"    ₱{subtotal}", font=("Arial", 9, "bold"), 
                      bg="white", fg=BUTTON_COLOR).pack(side="right")
 
-        # Separator
+        
         tk.Label(content_frame, text="─" * 50, bg="white", fg="#DDD").pack(anchor="w", pady=(10, 10))
 
-        # Total
+        
         total_frame = tk.Frame(content_frame, bg="white")
         total_frame.pack(fill="x", pady=10)
         tk.Label(total_frame, text="TOTAL AMOUNT:", font=("Arial", 11, "bold"), 
@@ -780,16 +1131,16 @@ class ClinicBookingApp:
         tk.Label(total_frame, text=f"₱{total_amount}", font=("Arial", 14, "bold"), 
                  bg="white", fg=ACCENT).pack(side="right")
 
-        # Separator
+        
         tk.Label(content_frame, text="─" * 50, bg="white", fg="#DDD").pack(anchor="w", pady=(10, 15))
 
-        # Footer message
+        
         tk.Label(content_frame, text="✓ Booking Confirmed Successfully!", font=("Arial", 10, "bold"), 
                  bg="white", fg="#4CAF50").pack(pady=10)
         tk.Label(content_frame, text="A confirmation email has been sent to your registered email.", 
                  font=("Arial", 8), bg="white", fg="#999", wraplength=400).pack(pady=(0, 15))
 
-        # Buttons
+        
         button_frame = tk.Frame(receipt_window, bg="white")
         button_frame.pack(fill="x", padx=20, pady=15)
         ttk.Button(button_frame, text="Print Receipt", command=lambda: self.print_receipt(receipt_num, patient_name, appointment_date, services_list, total_amount)).pack(side="left", padx=5)
@@ -805,22 +1156,30 @@ class ClinicBookingApp:
         
         bookings_window = tk.Toplevel(self.root)
         bookings_window.title("My Bookings")
-        bookings_window.geometry("700x600")
-        bookings_window.configure(bg="white")
+        bookings_window.geometry("800x650")
+        bookings_window.configure(bg="#E8E8E8")
 
         
-        header_frame = tk.Frame(bookings_window, bg=ACCENT, height=60)
+        header_frame = tk.Frame(bookings_window, bg="#0B8FA3", height=70)
         header_frame.pack(fill="x")
-        tk.Label(header_frame, text="📋 My Bookings", font=("Arial", 16, "bold"), 
-                 bg=ACCENT, fg="white").pack(pady=15)
+        
+        header_content = tk.Frame(header_frame, bg="#0B8FA3")
+        header_content.pack(fill="both", expand=True, padx=20, pady=15)
+        
+        tk.Label(header_content, text="📋 My Bookings", font=("Arial", 18, "bold"), 
+                 bg="#0B8FA3", fg="white").pack(side="left")
+        tk.Label(header_content, text=f"Patient: {self.current_user}", font=("Arial", 11), 
+                 bg="#0B8FA3", fg="white").pack(side="right")
 
         
-        content_frame = tk.Frame(bookings_window, bg="white")
+        content_frame = tk.Frame(bookings_window, bg="#E8E8E8")
         content_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         if not bookings:
-            tk.Label(content_frame, text="No bookings found.", font=("Arial", 12), 
-                     bg="white", fg="#999").pack(pady=50)
+            empty_frame = tk.Frame(content_frame, bg="white", relief="solid", bd=1)
+            empty_frame.pack(fill="both", expand=True, padx=10, pady=10)
+            tk.Label(empty_frame, text="📭 No bookings found.", font=("Arial", 14), 
+                     bg="white", fg="#999").pack(pady=80)
         else:
             
             canvas = tk.Canvas(content_frame, bg="white", highlightthickness=0)
@@ -837,37 +1196,46 @@ class ClinicBookingApp:
 
             
             for booking in bookings:
-                booking_card = tk.Frame(scrollable_frame, bg=CARD_BG, bd=1, relief="solid", padx=15, pady=15)
-                booking_card.pack(fill="x", pady=10)
+                booking_card = tk.Frame(scrollable_frame, bg="white", bd=2, relief="solid", highlightbackground="#0B8FA3", highlightthickness=2)
+                booking_card.pack(fill="x", pady=10, padx=5)
 
                 
-                header_row = tk.Frame(booking_card, bg=CARD_BG)
-                header_row.pack(fill="x", pady=(0, 10))
-                tk.Label(header_row, text=f"Booking ID: {booking['booking_id']}", font=("Arial", 10, "bold"), 
-                         bg=CARD_BG, fg=TEXT_COLOR).pack(side="left")
-                tk.Label(header_row, text=f"Status: {booking['status'].upper()}", font=("Arial", 9, "bold"), 
-                         bg=CARD_BG, fg="#4CAF50").pack(side="right")
+                header_row = tk.Frame(booking_card, bg="#F5F5F5", relief="solid", bd=1)
+                header_row.pack(fill="x", padx=15, pady=15)
+                
+                tk.Label(header_row, text=f"🔖 Booking ID: {booking['booking_id']}", font=("Arial", 11, "bold"), 
+                         bg="#F5F5F5", fg="#0B8FA3").pack(side="left")
+                
+                status_color = "#4CAF50" if booking['status'].lower() == "confirmed" else "#FFA500"
+                tk.Label(header_row, text=f"Status: {booking['status'].upper()}", font=("Arial", 10, "bold"), 
+                         bg="#F5F5F5", fg=status_color).pack(side="right")
 
                 
-                tk.Label(booking_card, text=f"Appointment Date: {booking['appointment_date']}", 
-                         font=("Arial", 10), bg=CARD_BG, fg=TEXT_COLOR).pack(anchor="w", pady=3)
+                content = tk.Frame(booking_card, bg="white")
+                content.pack(fill="both", expand=True, padx=15, pady=15)
+                
+                tk.Label(content, text=f"📅 Appointment Date: {booking['appointment_date']}", 
+                         font=("Arial", 10, "bold"), bg="white", fg="#333").pack(anchor="w", pady=(0, 10))
 
                 
-                tk.Label(booking_card, text="Services:", font=("Arial", 9, "bold"), 
-                         bg=CARD_BG, fg=TEXT_COLOR).pack(anchor="w", pady=(5, 3))
+                tk.Label(content, text="Services Booked:", font=("Arial", 10, "bold"), 
+                         bg="white", fg="#0B8FA3").pack(anchor="w", pady=(0, 5))
                 
                 for service in booking['services']:
                     service_name, qty, price = service
-                    tk.Label(booking_card, text=f"  • {service_name} x{qty} = ₱{price}", 
-                             font=("Arial", 9), bg=CARD_BG, fg=TEXT_COLOR).pack(anchor="w")
+                    tk.Label(content, text=f"  ✓ {service_name} × {qty} = ₱{price}", 
+                             font=("Arial", 9), bg="white", fg="#333").pack(anchor="w", pady=2)
 
                 
-                total_frame = tk.Frame(booking_card, bg=CARD_BG)
-                total_frame.pack(fill="x", pady=(10, 0))
-                tk.Label(total_frame, text=f"Total: ₱{booking['total_amount']}", font=("Arial", 10, "bold"), 
-                         bg=CARD_BG, fg=ACCENT).pack(side="left")
+                separator = tk.Frame(content, bg="#E0E0E0", height=1)
+                separator.pack(fill="x", pady=10)
+                
+                total_frame = tk.Frame(content, bg="white")
+                total_frame.pack(fill="x", pady=(0, 10))
+                tk.Label(total_frame, text=f"💰 Total Amount: ₱{booking['total_amount']}", font=("Arial", 11, "bold"), 
+                         bg="white", fg="#D32F2F").pack(side="left")
                 tk.Label(total_frame, text=f"Booked on: {booking['created_at']}", font=("Arial", 8), 
-                         bg=CARD_BG, fg="#999").pack(side="right")
+                         bg="white", fg="#999").pack(side="right")
 
                 
                 def cancel_booking(booking_data=booking):
@@ -927,7 +1295,7 @@ class ClinicBookingApp:
         self.create_login_page()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
     root = tk.Tk()
     app = ClinicBookingApp(root)
     root.mainloop()
