@@ -7,10 +7,15 @@ import os
 from datetime import datetime
 
 users = {}
-USERS_FILE = "booking_data/users.txt"
-BOOKINGS_FILE = "booking_data/bookings.txt"
-FORGOT_PASSWORD_FILE = "booking_data/forgot_password.txt"
-CANCELLATIONS_FILE = "booking_data/cancellations.txt"
+
+# Get the directory where the script is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Define file paths using absolute paths
+USERS_FILE = os.path.join(BASE_DIR, "booking_data", "users.txt")
+BOOKINGS_FILE = os.path.join(BASE_DIR, "booking_data", "bookings.txt")
+FORGOT_PASSWORD_FILE = os.path.join(BASE_DIR, "booking_data", "forgot_password.txt")
+CANCELLATIONS_FILE = os.path.join(BASE_DIR, "booking_data", "cancellations.txt")
 
 services = {    
     "Dental Cleaning": 1000,
@@ -28,37 +33,105 @@ TEXT_COLOR = "#4A4A4A"
 def load_users():
     """Load users from users.txt file."""
     global users
-    if os.path.exists(USERS_FILE):
-        try:
-            with open(USERS_FILE, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line:
+    try:
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
+        
+        # If file doesn't exist, create it
+        if not os.path.exists(USERS_FILE):
+            with open(USERS_FILE, 'w', encoding='utf-8') as f:
+                pass  # Just create the file
+        
+        # Read existing users
+        users.clear()  # Clear existing users
+        with open(USERS_FILE, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
                         user_data = json.loads(line)
                         users[user_data['username']] = user_data['password']
-        except Exception as e:
-            print(f"Error loading users: {e}")
+                    except json.JSONDecodeError:
+                        print(f"Warning: Could not parse line: {line}")
+                        continue
+                    except KeyError as e:
+                        print(f"Warning: Missing required field in user data: {e}")
+                        continue
+    except Exception as e:
+        print(f"Error loading users: {e}")
+        # Try to create the file if it doesn't exist
+        try:
+            with open(USERS_FILE, 'w', encoding='utf-8') as f:
+                pass
+        except Exception as e2:
+            print(f"Failed to create users file: {e2}")
 
 
 def save_user(username, password):
     """Save a new user to users.txt file."""
-    os.makedirs("booking_data", exist_ok=True)
     try:
+        print(f"Attempting to save user: {username}")
+        
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
+        print(f"Directory exists or created: {os.path.dirname(USERS_FILE)}")
+        
+        # Prepare user data
         user_data = {
             "username": username,
             "password": password,
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
-        with open(USERS_FILE, 'a') as f:
-            f.write(json.dumps(user_data) + '\n')
+        
+        # Debug: Print the file path we're trying to write to
+        print(f"Writing to file: {USERS_FILE}")
+        
+        # Write to file with explicit error handling
+        try:
+            with open(USERS_FILE, 'a', encoding='utf-8') as f:
+                json_str = json.dumps(user_data)
+                print(f"Writing JSON: {json_str}")
+                f.write(json_str + '\n')
+                f.flush()  # Force write to disk
+                os.fsync(f.fileno())  # Ensure all buffers are written
+                print("Write successful")
+        except IOError as e:
+            print(f"IOError writing to file: {e}")
+            # Try to create the file if it doesn't exist
+            try:
+                with open(USERS_FILE, 'w', encoding='utf-8') as f:
+                    json_str = json.dumps(user_data)
+                    f.write(json_str + '\n')
+                    print("Created new file and wrote user data")
+            except Exception as e2:
+                print(f"Failed to create new file: {e2}")
+                return False
+        
+        # Update the in-memory users dictionary
+        users[username] = password
+        print(f"User {username} saved successfully")
+        return True
+        
+    except Exception as e:
+        print(f"Error saving user {username}: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        return False
     except Exception as e:
         print(f"Error saving user: {e}")
 
 
 def save_booking(patient_name, appointment_date, services_list, total_amount):
     """Save booking record to bookings.txt file."""
-    os.makedirs("booking_data", exist_ok=True)
     try:
+        print(f"Attempting to save booking for: {patient_name}")
+        
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(BOOKINGS_FILE), exist_ok=True)
+        print(f"Directory exists or created: {os.path.dirname(BOOKINGS_FILE)}")
+        
+        # Prepare booking data
         booking_data = {
             "booking_id": f"BK-{datetime.now().strftime('%Y%m%d%H%M%S')}",
             "patient_name": patient_name,
@@ -68,8 +141,40 @@ def save_booking(patient_name, appointment_date, services_list, total_amount):
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "status": "confirmed"
         }
-        with open(BOOKINGS_FILE, 'a') as f:
-            f.write(json.dumps(booking_data) + '\n')
+        
+        # Debug: Print the file path we're trying to write to
+        print(f"Writing to file: {BOOKINGS_FILE}")
+        
+        # Write to file with explicit error handling
+        try:
+            with open(BOOKINGS_FILE, 'a', encoding='utf-8') as f:
+                json_str = json.dumps(booking_data)
+                print(f"Writing booking data: {json_str}")
+                f.write(json_str + '\n')
+                f.flush()  # Force write to disk
+                os.fsync(f.fileno())  # Ensure all buffers are written
+                print("Booking write successful")
+        except IOError as e:
+            print(f"IOError writing booking to file: {e}")
+            # Try to create the file if it doesn't exist
+            try:
+                with open(BOOKINGS_FILE, 'w', encoding='utf-8') as f:
+                    json_str = json.dumps(booking_data)
+                    f.write(json_str + '\n')
+                    print("Created new bookings file and wrote data")
+            except Exception as e2:
+                print(f"Failed to create new bookings file: {e2}")
+                return False
+        
+        print(f"Booking for {patient_name} saved successfully")
+        return True
+        
+    except Exception as e:
+        print(f"Error saving booking: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        return False
     except Exception as e:
         print(f"Error saving booking: {e}")
 
