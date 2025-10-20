@@ -133,15 +133,15 @@ def save_booking(patient_name, appointment_date, services_list, total_amount):
         print(f"Services List: {services_list}")
         print(f"Type of services_list: {type(services_list)}")
         
-        # Ensure the booking_data directory exists
+        
         os.makedirs(os.path.dirname(BOOKINGS_FILE), exist_ok=True)
         print(f"Directory verified: {os.path.dirname(BOOKINGS_FILE)}")
         
-        # Process services list to ensure it's serializable
+        
         serializable_services = []
         for service in services_list:
             if isinstance(service, (list, tuple)) and len(service) >= 3:
-                # Convert tuple/list to dict
+                
                 service_dict = {
                     'service_name': str(service[0]),
                     'quantity': int(service[1]),
@@ -149,7 +149,7 @@ def save_booking(patient_name, appointment_date, services_list, total_amount):
                 }
                 serializable_services.append(service_dict)
             elif isinstance(service, dict):
-                # Ensure all values are serializable
+                
                 service_dict = {
                     'service_name': str(service.get('service_name', 'Unknown Service')),
                     'quantity': int(service.get('quantity', 1)),
@@ -159,7 +159,7 @@ def save_booking(patient_name, appointment_date, services_list, total_amount):
             else:
                 print(f"Warning: Invalid service format: {service}")
         
-        # Prepare booking data
+        
         booking_data = {
             "booking_id": f"BK-{datetime.now().strftime('%Y%m%d%H%M%S')}",
             "patient_name": str(patient_name),
@@ -172,11 +172,11 @@ def save_booking(patient_name, appointment_date, services_list, total_amount):
         
         print(f"Prepared booking data: {booking_data}")
         
-        # Write to file
+        
         print(f"Attempting to write to: {BOOKINGS_FILE}")
         
         try:
-            # First try to append to existing file
+            
             try:
                 with open(BOOKINGS_FILE, 'a', encoding='utf-8') as f:
                     json_str = json.dumps(booking_data, ensure_ascii=False)
@@ -190,7 +190,7 @@ def save_booking(patient_name, appointment_date, services_list, total_amount):
             except (IOError, json.JSONEncodeError) as e:
                 print(f"Error writing to file (will try to create new file): {e}")
                 
-                # If append fails, try to create a new file
+            
                 with open(BOOKINGS_FILE, 'w', encoding='utf-8') as f:
                     json_str = json.dumps(booking_data, ensure_ascii=False)
                     print(f"Creating new file with data: {json_str}")
